@@ -1,0 +1,15 @@
+{% extends "base.html" %}
+
+{% block content %}
+
+<h1>{{ flower.name }}</h1>
+
+<img src="{{ flower.image.url }}" width="300">
+
+<p>{{ flower.description }}</p>
+
+<h3>Price: Rs. {{ flower.price }}</h3>
+
+<a href="/flowers">⬅ Back to Flowers</a>
+
+{% endblock %}

@@ -1,0 +1,17 @@
+{% extends "base.html" %} 
+{% block content %} 
+
+<h1>{{ bouquet.name }}</h1>
+{% if bouquet.image %}
+    <img src="{{ bouquet.image.url }}" width="300" />
+{% endif %}
+<p>{{ bouquet.description }}</p>
+<p>Price: Rs. {{ bouquet.price }}</p>
+<h3>Flowers in this bouquet:</h3>
+<ul>
+  {% for flower in bouquet.flowers.all %}
+    <li>{{ flower.name }}</li>
+  {% endfor %}
+</ul>
+<a href="/bouquets">⬅ Back to Bouquets</a>
+{% endblock %}

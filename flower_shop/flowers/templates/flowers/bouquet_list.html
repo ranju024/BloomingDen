@@ -1,0 +1,18 @@
+{% extends "base.html" %}
+{% block content %}
+<h1>Bouquets</h1>
+
+<div class="product-grid">
+    {% for bouquet in bouquets %}
+    <div class="product-card">
+        <a href="{% url 'bouquet_detail' bouquet.id %}">
+            {% if bouquet.image %}
+                <img src="{{ bouquet.image.url }}" width="200">
+            {% endif %}
+            <h3>{{ bouquet.name }}</h3>
+        </a>
+            <p>Rs. {{ bouquet.price }}</p>
+        </div>
+    {% endfor %}
+</div>
+{% endblock %}

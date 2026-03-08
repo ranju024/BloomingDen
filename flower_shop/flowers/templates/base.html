@@ -1,0 +1,63 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>BloomingDen</title>
+    <style>
+      body {
+        font-family: Arial;
+        margin: 40px;
+        background-color: #f5f5f5;
+      }
+
+      nav {
+        background-color: #2e7d32;
+        padding: 10px;
+      }
+
+      nav a {
+        color: white;
+        margin-right: 20px;
+        text-decoration: none;
+        font-weight: bold;
+      }
+
+      nav a:hover {
+        text-decoration: underline;
+      }
+      .flower-container {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 30px;
+      }
+
+      .flower-card {
+        background: white;
+        padding: 20px;
+        border-radius: 10px;
+        width: 220px;
+        text-align: center;
+        box-shadow: 0px 4px 10px rgba(0, 0, 0, 0.1);
+      }
+
+      .flower-card img {
+        border-radius: 10px;
+      }
+
+      .flower-card a {
+        text-decoration: none;
+        color: black;
+      }
+    </style>
+  </head>
+  <body>
+    <nav>
+      <a href="/">Home</a>
+      <a href="/flowers">Flowers</a>
+      <a href="/bouquets">Bouquets</a>
+    </nav>
+    <hr />
+    {% block content %} {% endblock %}
+  </body>
+</html>

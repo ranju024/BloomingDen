@@ -1,0 +1,17 @@
+{% extends "base.html" %} {% block content %}
+<h1>Our Flowers 🌸</h1>
+<!-- show each flower on the database; 'flowers' returned by flowers_list in views.py -->
+<div class="flower-container">
+  {% for flower in flowers %}
+  <div class="flower-card">
+    <a href="/flowers/{{ flower.id }}">
+      <img src="{{ flower.image.url }}" width="200" />
+    </a>
+    <h2>
+      <a href="/flowers/{{ flower.id }}"> {{ flower.name }} </a>
+    </h2>
+    <p>Price: Rs {{ flower.price }}</p>
+  </div>
+  {% endfor %}
+</div>
+{% endblock %}
