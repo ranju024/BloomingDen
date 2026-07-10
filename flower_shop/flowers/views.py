@@ -1,5 +1,6 @@
 from django.shortcuts import render, get_object_or_404, redirect
 from django.http import HttpResponse
+from django.views.decorators.http import require_POST
 from .models import Flower, Bouquet, Order
 from .cart import Cart
 
@@ -27,6 +28,7 @@ def bouquet_detail(request, pk):
     bouquet = get_object_or_404(Bouquet, pk=pk)
     return render(request, "flowers/bouquet_detail.html", {"bouquet": bouquet})
 
+@require_POST  # reject anything that isn't POST
 def add_to_cart(request, pk):
     """
     View that handles adding a bouquet to the cart.
@@ -76,6 +78,7 @@ def cart_detail(request):
         "total_price": total_price
         })  
 
+@require_POST
 def remove_from_cart(request, product_id):
     ''' Remove a bouquet from the cart '''
     # cart = Cart(request)
