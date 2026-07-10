@@ -1,0 +1,33 @@
+{% extends 'base.html' %} {% block content %} {% if items %}
+<h1>Your Shopping Cart</h1>
+<table border="1" cellpadding="10">
+  <thead>
+    <tr>
+      <th>Bouquet</th>
+      <th>Price</th>
+      <th>Quantity</th>
+      <th>Subtotal</th>
+      <th>Action</th>
+    </tr>
+  </thead>
+  <tbody>
+    {% for item in items %}
+    <tr>
+      <td>{{ item.name }}</td> <!-- bouquet's name -->
+      <td>Rs. {{ item.price }}</td>
+      <td>{{item.quantity }}</td>
+      <td>Rs. {{ item.subtotal }}</td>
+      <td>
+        <a href="{% url 'remove_from_cart' item.id %}" style="color: red">
+          <button>Remove</button>
+        </a>
+      </td>
+    </tr>
+    {% endfor %}
+  </tbody>
+</table>
+<br>
+<h3>Total Price: Rs. {{ total_price }}</h3>
+{% else %}
+<p>Your Cart is Empty!</p>
+{% endif %} {% endblock %}

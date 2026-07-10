@@ -1,17 +1,27 @@
-{% extends "base.html" %} 
-{% block content %} 
+{% extends "base.html" %} {% block content %}
 
 <h1>{{ bouquet.name }}</h1>
 {% if bouquet.image %}
-    <img src="{{ bouquet.image.url }}" width="300" />
+<img src="{{ bouquet.image.url }}" width="300" />
 {% endif %}
 <p>{{ bouquet.description }}</p>
 <p>Price: Rs. {{ bouquet.price }}</p>
-<h3>Flowers in this bouquet:</h3>
-<ul>
+
+<!-- Form that sends request to add item to cart -->
+<form action="{% url 'add_to_cart' bouquet.pk %}" method="post">
+    <!-- Django security token (required for POST forms) -->
+    {% csrf_token %}
+    <!-- Button that adds bouquet to cart -->
+    <button class="add-cart-btn">
+        Add to Cart
+    </button>
+</form>
+
+<p><strong>Flowers in this bouquet:</strong></p>
+<div>
   {% for flower in bouquet.flowers.all %}
-    <li>{{ flower.name }}</li>
+  <span>{{ flower.name }}</span>
   {% endfor %}
-</ul>
+</div>
 <a href="/bouquets">⬅ Back to Bouquets</a>
 {% endblock %}

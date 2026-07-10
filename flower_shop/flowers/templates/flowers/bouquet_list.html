@@ -5,7 +5,7 @@
 <div class="product-grid">
     {% for bouquet in bouquets %}
     <div class="product-card">
-        <a href="{% url 'bouquet_detail' bouquet.id %}">
+        <a href="{% url 'bouquet_detail' bouquet.pk %}">
             {% if bouquet.image %}
                 <img src="{{ bouquet.image.url }}" width="200">
             {% endif %}
