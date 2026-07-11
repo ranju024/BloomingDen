@@ -29,6 +29,7 @@
 </table>
 <br>
 <h3>Total Price: Rs. {{ total_price }}</h3>
+<a href="{% url 'checkout' %}"><button>Proceed to Checkout</button></a>
 {% else %}
 <p>Your Cart is Empty!</p>
 {% endif %} {% endblock %}

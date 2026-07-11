@@ -1,3 +1,4 @@
+from decimal import Decimal
 from django.shortcuts import render, get_object_or_404, redirect
 from django.http import HttpResponse
 from django.views.decorators.http import require_POST
@@ -46,9 +47,9 @@ def get_cart_data(request):
     cart = request.session.get('cart', {})
     items = cart.values()
 
-    total_price = 0
+    total_price = Decimal('0.00')
     for item in items:
-        total_price += float(item['price']) * item['quantity']
+        total_price += Decimal(item['price']) * item['quantity']
     return items, total_price
 
 def cart_detail(request):
@@ -65,11 +66,11 @@ def cart_detail(request):
     # request.session['cart'] = cart
 
     items = cart.values()
-    total_price = 0
+    total_price = Decimal('0.00')
 
     #calculate subtotal for each item
     for item in items:
-        item['subtotal'] = float(item['price']) * item['quantity']
+        item['subtotal'] = Decimal(item['price']) * item['quantity']
         total_price += item['subtotal']
 
     # Send cart items to template    
@@ -94,4 +95,31 @@ def remove_from_cart(request, product_id):
 
 def checkout(request):
     ''' Handles checkout form submission and saves the order'''
+    items, total_price = get_cart_data(request)
+    if not items:
+        return redirect('bouquet_list') # if nth to check out
+    if request.method == 'POST':
+        name = request.POST.get('name', '').strip()
+        phone = request.POST.get('phone', '').strip()
+        address = request.POST.get('address', '').strip()
+
+        if name and phone and address:  # minimal server-side validation
+            order = Order.objects.create(
+                name=name,
+                phone=phone,
+                address=address,
+                total_price=total_price
+            )
+            request.session['cart'] = {}  #empty the cart
+            request.session.modified = True
+            return redirect('order_success', order_id=order.id)
+        
+    return render(request, "flowers/checkout.html", {
+        "items": items,
+        "total_price": total_price
+    })
+
+def order_success(request, order_id):
+    order = get_object_or_404(Order, id=order_id)
+    return render(request, "flowers/order_success.html", {"order": order})
 

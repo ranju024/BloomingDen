@@ -1,10 +1,15 @@
 {% extends "base.html" %}
+{% load static %}
 
 {% block content %}
 
 <h1>{{ flower.name }}</h1>
 
-<img src="{{ flower.image.url }}" width="300">
+{% if flower.image %}
+  <img src="{{ flower.image.url }}" width="300">
+{% else %}
+  <img src="{% static 'images/no-image.jpg' %}" width="300" alt="No image available">
+{% endif %}
 
 <p>{{ flower.description }}</p>
 

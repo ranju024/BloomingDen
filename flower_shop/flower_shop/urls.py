@@ -31,6 +31,8 @@ urlpatterns = [
     path("cart/add/<int:pk>/", views.add_to_cart, name='add_to_cart'),
     path("cart/", views.cart_detail, name='cart_detail'),
     path("cart/remove/<int:product_id>/", views.remove_from_cart, name='remove_from_cart'),
+    path("checkout/", views.checkout, name='checkout'),
+    path("order/success/<int:order_id>/", views.order_success, name='order_success'),
 ]
 
 if settings.DEBUG:  # configure URLs for media

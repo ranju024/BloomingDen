@@ -1,11 +1,17 @@
-{% extends "base.html" %} {% block content %}
+{% extends "base.html" %}
+{% load static %}
+{% block content %}
 <h1>Our Flowers 🌸</h1>
 <!-- show each flower on the database; 'flowers' returned by flowers_list in views.py -->
 <div class="flower-container">
   {% for flower in flowers %}
   <div class="flower-card">
     <a href="/flowers/{{ flower.id }}">
-      <img src="{{ flower.image.url }}" width="200" />
+      {% if flower.image %}
+        <img src="{{ flower.image.url }}" width="200">
+      {% else %}
+        <img src="{% static 'images/no-image.jpg' %}" width="200" alt="">
+      {% endif %}
     </a>
     <h2>
       <a href="/flowers/{{ flower.id }}"> {{ flower.name }} </a>
