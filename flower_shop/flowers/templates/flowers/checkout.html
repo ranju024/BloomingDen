@@ -1,5 +1,35 @@
 {% extends "base.html" %}
 {% block content %}
+<div class="page-section">
+  <h1>Checkout</h1>
+</div>
+
+<h3>Order summary</h3>
+<ul class="order-summary-list">
+    {% for item in items %}
+        <li>{{ item.name }} × {{ item.quantity }} — Rs. {{ item.subtotal }}</li>
+    {% endfor %}
+</ul>
+<p><strong>Total: Rs. {{ total_price }}</strong></p>
+
+<form method="post" style="margin-top: 24px;">
+    {% csrf_token %}
+    <label>Name
+        <input type="text" name="name" required>
+    </label>
+    <label>Phone
+        <input type="text" name="phone" required>
+    </label>
+    <label>Address
+        <textarea name="address" required></textarea>
+    </label>
+    <button type="submit" class="btn" style="margin-top: 10px;">Place order</button>
+</form>
+{% endblock %}
+
+{% comment %}
+<!-- {% extends "base.html" %}
+{% block content %}
 <h1>Checkout</h1>
 
 <h3>Order Summary</h3>
@@ -18,4 +48,5 @@
     <button type="submit">Place Order</button>
 </form>
 
-{% endblock %}
+{% endblock %} -->
+{% endcomment %}

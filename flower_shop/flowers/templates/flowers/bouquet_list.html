@@ -1,6 +1,32 @@
 {% extends "base.html" %}
 {% load static %}
 {% block content %}
+<div class="page-section">
+  <h1>Bouquets</h1>
+  <a href="{% url 'shop' %}" class="back-link tight">← Back to shop</a>
+</div>
+<div class="product-grid">
+  {% for bouquet in bouquets %}
+  <div class="product-card">
+    <a href="{% url 'bouquet_detail' bouquet.pk %}">
+      {% if bouquet.image %}
+        <img src="{{ bouquet.image.url }}" alt="{{ bouquet.name }}">
+      {% else %}
+        <img src="{% static 'images/no-image.jpg' %}" alt="No image available">
+      {% endif %}
+      <h3>{{ bouquet.name }}</h3>
+    </a>
+    <p class="price">Rs. {{ bouquet.price }}</p>
+  </div>
+  {% endfor %}
+</div>
+
+{% endblock %}
+
+{% comment %}
+<!-- {% extends "base.html" %}
+{% load static %}
+{% block content %}
 <h1>Bouquets</h1>
 
 <div class="product-grid">
@@ -18,4 +44,5 @@
         </div>
     {% endfor %}
 </div>
-{% endblock %}
+{% endblock %} -->
+{% endcomment %}

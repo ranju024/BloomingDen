@@ -18,36 +18,50 @@ class Cart:
         # Store the cart
         self.cart = cart
 
-    def add(self, bouquet):
+    def add(self, item, item_type):
         """
-        Add a bouquet to the cart. We use the bouquet ID as the key.
+        Add an item (Flower or Bouquet) to the cart.
+        item_type distinguishes them so IDs never collide.
         """
-        bouquet_id = str(bouquet.id)
 
-        # If the bouquet is not already in the cart
-        if bouquet_id not in self.cart:
-            self.cart[bouquet_id] = {
-                'id': bouquet.id,
-                'name': bouquet.name,
-                'price': str(bouquet.price),
+        key = f"{item_type}-{item.id}"
+
+        # If the item is not already in the cart
+        if key not in self.cart:
+            self.cart[key] = {
+                'key': key,
+                'id': item.id,
+                'type': item_type,
+                'name': item.name,
+                'price': str(item.price),
                 'quantity': 1
             }
         else:
             # If already in cart, increase quantity
-            self.cart[bouquet_id]['quantity'] += 1
+            self.cart[key]['quantity'] += 1
 
         # Save changes
         self.save()
-    
-    def remove(self, bouquet_id):
+
+    def increase(self, key): # increase quantity
+        if key in self.cart:
+            self.cart[key]['quantity'] += 1
+        self.save()
+
+    def decrease(self, key): # decrease quantity
+        if key in self.cart:
+            self.cart[key]['quantity'] -= 1
+            if self.cart[key]['quantity'] <= 0:
+                del self.cart[key]
+        self.save()
+
+    def remove(self, key):
         """
-        Remove a bouquet from the cart. bouquet_id is converted to string because
-        we stored IDs as strings in the cart dictionary.
+        Remove an item from the cart.
         """
-        bouquet_id = str(bouquet_id)
         # check if the bouquet exists in the cart
-        if bouquet_id in self.cart:
-            del self.cart[bouquet_id]
+        if key in self.cart:
+            del self.cart[key]
         self.save()  # save updated cart
 
     def save(self):
@@ -59,5 +73,5 @@ class Cart:
 
     def get_items(self):
         ''' Returns items currently stored in the cart
-        Each item represents a bouquet added by the user. '''
+    '''
         return self.cart.values()

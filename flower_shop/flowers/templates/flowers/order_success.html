@@ -1,7 +1,19 @@
 {% extends "base.html" %}
 {% block content %}
+<div class="empty-state">
+  <h1>Thank you, {{ order.name }}!</h1>
+  <p>Your order #{{ order.id }} has been placed.</p>
+  <p>Total: Rs. {{ order.total_price }}</p>
+  <a href="{% url 'bouquet_list' %}" class="btn">Continue shopping</a>
+</div>
+{% endblock %} 
+
+{% comment %}
+<!-- {% extends "base.html" %}
+{% block content %}
 <h1>Thank you, {{ order.name }}!</h1>
 <p>Your order #{{ order.id }} has been placed.</p>
 <p>Total: Rs.{{ order.total_price }}</p>
 <a href="{% url 'bouquet_list' %}">Continue Shopping</a>
-{% endblock %}
+{% endblock %} -->
+{% endcomment %}

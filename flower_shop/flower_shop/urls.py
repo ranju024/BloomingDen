@@ -25,14 +25,17 @@ urlpatterns = [
     path("admin/", admin.site.urls),
     path("",views.home, name='home'),
     path("flowers/", views.flowers_list, name='flowers_list'),
-    path("flowers/<int:id>/", views.flower_detail),
+    path("flowers/<int:id>/", views.flower_detail, name='flower_detail'),
     path("bouquets/", views.bouquet_list, name='bouquet_list'),
     path("bouquets/<int:pk>/", views.bouquet_detail, name='bouquet_detail'),
-    path("cart/add/<int:pk>/", views.add_to_cart, name='add_to_cart'),
+    path("cart/add/<str:item_type>/<int:pk>/", views.add_to_cart, name='add_to_cart'),
     path("cart/", views.cart_detail, name='cart_detail'),
-    path("cart/remove/<int:product_id>/", views.remove_from_cart, name='remove_from_cart'),
+    path("cart/remove/<str:key>/", views.remove_from_cart, name='remove_from_cart'),
     path("checkout/", views.checkout, name='checkout'),
     path("order/success/<int:order_id>/", views.order_success, name='order_success'),
+    path("shop/", views.shop, name='shop'),
+    path("cart/increase/<str:key>/", views.increase_cart_item, name='increase_cart_item'),
+    path("cart/decrease/<str:key>/", views.decrease_cart_item, name='decrease_cart_item'),
 ]
 
 if settings.DEBUG:  # configure URLs for media

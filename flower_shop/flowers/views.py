@@ -2,6 +2,7 @@ from decimal import Decimal
 from django.shortcuts import render, get_object_or_404, redirect
 from django.http import HttpResponse
 from django.views.decorators.http import require_POST
+from django.contrib import messages
 from .models import Flower, Bouquet, Order
 from .cart import Cart
 
@@ -30,14 +31,22 @@ def bouquet_detail(request, pk):
     return render(request, "flowers/bouquet_detail.html", {"bouquet": bouquet})
 
 @require_POST  # reject anything that isn't POST
-def add_to_cart(request, pk):
+def add_to_cart(request, item_type, pk):
     """
-    View that handles adding a bouquet to the cart.
+    View that handles adding an item to the cart.
     """ 
-    bouquet = get_object_or_404(Bouquet, pk=pk) # Get the bouquet from database    
+    if item_type == 'bouquet':
+        item = get_object_or_404(Bouquet, pk=pk) # Get the bouquet from database    
+    elif item_type == 'flower':
+        item = get_object_or_404(Flower, pk=pk)
+    else:
+        return HttpResponse(status=404)
     cart = Cart(request) # Create cart object
-    cart.add(bouquet) # Add bouquet to cart    
-    return redirect('bouquet_detail', pk=pk) # Redirect back to the bouquet page
+    cart.add(item, item_type) # Add bouquet to cart 
+    messages.success(request, f"{item.name} added to cart.")
+    if item_type == 'bouquet':   
+        return redirect('bouquet_detail', pk=pk) # Redirect back to the bouquet page
+    return redirect('flower_detail', id=pk)
 
 def get_cart_data(request):
     """
@@ -80,15 +89,23 @@ def cart_detail(request):
         })  
 
 @require_POST
-def remove_from_cart(request, product_id):
-    ''' Remove a bouquet from the cart '''
-    # cart = Cart(request)
-    # cart.remove(pk) # remove bouquet using its id
-    # item = Cart.objects.get(pk=pk)
-    # item.delete()
+def increase_cart_item(request, key):
+    cart = Cart(request)
+    cart.increase(key)
+    return redirect('cart_detail')
+
+@require_POST
+def decrease_cart_item(request, key):
+    cart = Cart(request)
+    cart.decrease(key)
+    return redirect('cart_detail')
+
+@require_POST
+def remove_from_cart(request, key):
+    ''' Remove an item from the cart '''
     cart = request.session.get('cart', {})
-    if str(product_id) in cart:
-        del cart[str(product_id)]
+    if key in cart:
+        del cart[key]
     request.session['cart'] = cart
     request.session.modified = True
     return redirect('cart_detail')
@@ -123,3 +140,5 @@ def order_success(request, order_id):
     order = get_object_or_404(Order, id=order_id)
     return render(request, "flowers/order_success.html", {"order": order})
 
+def shop(request):
+    return render(request, "flowers/shop.html")

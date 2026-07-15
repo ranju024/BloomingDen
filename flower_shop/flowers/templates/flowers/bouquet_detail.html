@@ -1,5 +1,39 @@
 {% extends "base.html" %}
 {% load static %}
+{% block content %}
+<div class="detail-layout">
+  <div>
+    {% if bouquet.image %}
+      <img src="{{ bouquet.image.url }}" alt="{{ bouquet.name }}">
+    {% else %}
+      <img src="{% static 'images/no-image.jpg' %}" alt="No image available">
+    {% endif %}
+  </div>
+  <div>
+    <h1>{{ bouquet.name }}</h1>
+    <p>{{ bouquet.description }}</p>
+    <h3>Rs. {{ bouquet.price }}</h3>
+
+    <form action="{% url 'add_to_cart' 'bouquet' bouquet.pk %}" method="post">
+        {% csrf_token %}
+        <button class="add-cart-btn" style="width:auto; padding: 10px 24px;">Add to cart</button>
+    </form>
+
+    <p style="margin-top: 20px;"><strong>Flowers in this bouquet:</strong></p>
+    <div class="tag-list">
+      {% for flower in bouquet.flowers.all %}
+      <span>{{ flower.name }}</span>
+      {% endfor %}
+    </div>
+    <a href="/bouquets" class="back-link">← Back to bouquets</a>
+  </div>
+</div>
+{% endblock %}
+
+
+{% comment %}
+<!-- {% extends "base.html" %}
+{% load static %}
  {% block content %}
 
 <h1>{{ bouquet.name }}</h1>
@@ -12,11 +46,11 @@
 <p>{{ bouquet.description }}</p>
 <p>Price: Rs. {{ bouquet.price }}</p>
 
-<!-- Form that sends request to add item to cart -->
+ Form that sends request to add item to cart 
 <form action="{% url 'add_to_cart' bouquet.pk %}" method="post">
-    <!-- Django security token (required for POST forms) -->
+     Django security token (required for POST forms) 
     {% csrf_token %}
-    <!-- Button that adds bouquet to cart -->
+    <!-- Button that adds bouquet to cart 
     <button class="add-cart-btn">
         Add to Cart
     </button>
@@ -29,4 +63,5 @@
   {% endfor %}
 </div>
 <a href="/bouquets">⬅ Back to Bouquets</a>
-{% endblock %}
+{% endblock %} -->
+{% endcomment %}

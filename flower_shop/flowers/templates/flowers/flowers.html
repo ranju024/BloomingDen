@@ -1,8 +1,33 @@
 {% extends "base.html" %}
 {% load static %}
 {% block content %}
+<div class="page-section">
+  <h1>Our flowers</h1>
+  <a href="{% url 'shop' %}" class="back-link tight">← Back to shop</a>
+</div>
+<div class="product-grid">
+  {% for flower in flowers %}
+  <div class="product-card">
+    <a href="/flowers/{{ flower.id }}">
+      {% if flower.image %}
+        <img src="{{ flower.image.url }}" alt="{{ flower.name }}">
+      {% else %}
+        <img src="{% static 'images/no-image.jpg' %}" alt="No image available">
+      {% endif %}
+      <h3>{{ flower.name }}</h3>
+    </a>
+    <p class="price">Rs. {{ flower.price }}</p>
+  </div>
+  {% endfor %}
+</div>
+{% endblock %}
+
+{% comment %}
+<!-- {% extends "base.html" %}
+{% load static %}
+{% block content %}
 <h1>Our Flowers 🌸</h1>
-<!-- show each flower on the database; 'flowers' returned by flowers_list in views.py -->
+show each flower on the database; 'flowers' returned by flowers_list in views.py 
 <div class="flower-container">
   {% for flower in flowers %}
   <div class="flower-card">
@@ -20,4 +45,6 @@
   </div>
   {% endfor %}
 </div>
-{% endblock %}
+{% endblock %} -->
+{% endcomment %}
+

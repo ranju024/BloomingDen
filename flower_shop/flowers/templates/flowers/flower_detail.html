@@ -1,5 +1,30 @@
 {% extends "base.html" %}
 {% load static %}
+{% block content %}
+<div class="detail-layout">
+  <div>
+    {% if flower.image %}
+      <img src="{{ flower.image.url }}" alt="{{ flower.name }}">
+    {% else %}
+      <img src="{% static 'images/no-image.jpg' %}" alt="No image available">
+    {% endif %}
+  </div>
+  <div>
+    <h1>{{ flower.name }}</h1>
+    <p>{{ flower.description }}</p>
+    <h3>Rs. {{ flower.price }}</h3>
+    <form action="{% url 'add_to_cart' 'flower' flower.pk %}" method="post">
+      {% csrf_token %}
+      <button class="add-cart-btn" style="width:auto; padding: 10px 24px;">Add to cart</button>
+    </form>
+    <a href="/flowers" class="back-link">← Back to flowers</a>
+  </div>
+</div>
+{% endblock %}
+
+{% comment %}
+<!-- {% extends "base.html" %}
+{% load static %}
 
 {% block content %}
 
@@ -17,4 +42,5 @@
 
 <a href="/flowers">⬅ Back to Flowers</a>
 
-{% endblock %}
+{% endblock %} -->
+{% endcomment %}

@@ -1,4 +1,43 @@
+{% load static %}
 <!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>BloomingDen</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link href="https://fonts.googleapis.com/css2?family=Cormorant:wght@500;600&family=Poppins:wght@400;500&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="{% static 'css/style.css' %}">
+  </head>
+  <body>
+    <nav>
+      <div class="container">
+        <a href="/" class="nav-brand">BloomingDen</a>
+        <div class="nav-links">
+          <a href="/flowers">Flowers</a>
+          <a href="/bouquets">Bouquets</a>
+          <a href="{% url 'cart_detail' %}">Cart ({{ cart_item_count }})</a>
+        </div>
+      </div>
+    </nav>
+    <div class="container">
+      {% if messages %}
+      <div class="messages">
+        {% for message in messages %}
+        <p class="message {{ message.tags }}">{{ message }}</p>
+      {% endfor %}
+    </div>
+    {% endif %}
+      {% block content %} {% endblock %}
+    </div>
+    <footer>
+      <p>&copy; 2026 BloomingDen. Fresh flowers, delivered with care.</p>
+    </footer>
+  </body>
+</html>
+
+{% comment %} 
+<!-- <!doctype html>
 <html lang="en">
   <head>
     <meta charset="UTF-8" />
@@ -74,4 +113,5 @@
     <hr />
     {% block content %} {% endblock %}
   </body>
-</html>
+</html> -->
+{% endcomment %} 

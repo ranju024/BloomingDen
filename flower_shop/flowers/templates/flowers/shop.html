@@ -1,0 +1,30 @@
+{% extends "base.html" %}
+{% block content %}
+<div class="page-section">
+  <h1>Shop</h1>
+</div>
+<div class="product-grid">
+  <div class="product-card">
+    <a href="{% url 'bouquet_list' %}">
+      <h3>Bouquets</h3>
+    </a>
+    <p class="price">Ready-made floral arrangements</p>
+  </div>
+  <div class="product-card">
+    <a href="{% url 'flowers_list' %}">
+      <h3>Flowers</h3>
+    </a>
+    <p class="price">Individual stems, sold fresh</p>
+  </div>
+  <div class="product-card disabled">
+    <h3>Plants</h3>
+    <p class="price">Indoor & outdoor plants</p>
+    <span class="coming-soon-badge">Coming soon</span>
+  </div>
+  <div class="product-card disabled">
+    <h3>Events</h3>
+    <p class="price">Weddings & floral design services</p>
+    <span class="coming-soon-badge">Coming soon</span>
+  </div>
+</div>
+{% endblock %}
