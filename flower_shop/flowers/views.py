@@ -3,12 +3,31 @@ from django.shortcuts import render, get_object_or_404, redirect
 from django.http import HttpResponse
 from django.views.decorators.http import require_POST
 from django.contrib import messages
-from .models import Flower, Bouquet, Order
+from django.contrib.auth import login as auth_login
+from .forms import SignUpForm
+from .models import Flower, Bouquet, Order, Category, Plant, Profile
 from .cart import Cart
 
 # Create your views here.
 def home(request):
     return render(request, "home.html")
+
+def signup(request):
+    if request.method == 'POST':
+        form = SignUpForm(request.POST)
+        if form.is_valid():
+            user = form.save()
+            Profile.objects.create(
+                user=user,
+                role=form.cleaned_data['role'],
+                phone=form.cleaned_data['phone']
+            )
+            auth_login(request, user)
+            messages.success(request, "Welcome to BloomingDen!")
+            return redirect('home')
+    else:
+        form = SignUpForm()
+    return render(request, "flowers/signup.html", {"form": form})
 
 def flowers_list(request):
     ''' get all flowers from the database and send them to 
@@ -39,14 +58,20 @@ def add_to_cart(request, item_type, pk):
         item = get_object_or_404(Bouquet, pk=pk) # Get the bouquet from database    
     elif item_type == 'flower':
         item = get_object_or_404(Flower, pk=pk)
+    elif item_type == 'plant':
+        item = get_object_or_404(Plant, pk=pk)
     else:
         return HttpResponse(status=404)
+    
     cart = Cart(request) # Create cart object
-    cart.add(item, item_type) # Add bouquet to cart 
+    cart.add(item, item_type) # Add item to cart 
     messages.success(request, f"{item.name} added to cart.")
+
     if item_type == 'bouquet':   
         return redirect('bouquet_detail', pk=pk) # Redirect back to the bouquet page
-    return redirect('flower_detail', id=pk)
+    elif item_type == 'flower':
+        return redirect('flower_detail', id=pk)
+    return redirect('plant_detail', pk=pk)
 
 def get_cart_data(request):
     """
@@ -65,14 +90,6 @@ def cart_detail(request):
     ''' Display the contents of the shopping cart and calculate total price '''
     # cart = Cart(request)  # create cart object from session
     cart = request.session.get('cart', {})
-    # items = cart.get_items()  # get all items stored in the cart
-
-    # Fix old cart items that don't have id
-    # for key, item in list(cart.items()):
-    #     if 'id' not in item:
-    #         item['id'] = key
-
-    # request.session['cart'] = cart
 
     items = cart.values()
     total_price = Decimal('0.00')
@@ -142,3 +159,24 @@ def order_success(request, order_id):
 
 def shop(request):
     return render(request, "flowers/shop.html")
+
+
+def plants_list(request, category_slug=None):
+    plants = Plant.objects.all()
+    category = None
+    subcategories = Category.objects.filter(name="Plants").first()
+    subcategories = subcategories.children.all() if subcategories else []
+
+    if category_slug:
+        category = get_object_or_404(Category, slug=category_slug)
+        plants = plants.filter(category=category)
+
+    return render(request, "flowers/plants_list.html", {
+        "plants": plants,
+        "category": category,
+        "subcategories": subcategories,
+    })
+
+def plant_detail(request, pk):
+    plant = get_object_or_404(Plant, pk=pk)
+    return render(request, "flowers/plant_detail.html", {"plant": plant})

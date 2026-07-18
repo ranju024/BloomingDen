@@ -13,11 +13,22 @@
     <nav>
       <div class="container">
         <a href="/" class="nav-brand">BloomingDen</a>
-        <div class="nav-links">
+        <!-- <div class="nav-links">
           <a href="/flowers">Flowers</a>
           <a href="/bouquets">Bouquets</a>
           <a href="{% url 'cart_detail' %}">Cart ({{ cart_item_count }})</a>
-        </div>
+        </div> -->
+        <div class="nav-links">
+          <a href="{% url 'shop' %}">Shop</a>
+          <a href="{% url 'cart_detail' %}">Cart ({{ cart_item_count }})</a>
+          {% if user.is_authenticated %}
+            <span>Hi, {{ user.username }}</span>
+            <a href="{% url 'logout' %}">Logout</a>
+          {% else %}
+            <a href="{% url 'login' %}">Login</a>
+            <a href="{% url 'signup' %}">Sign up</a>
+          {% endif %}
+        </div>        
       </div>
     </nav>
     <div class="container">
@@ -37,81 +48,5 @@
 </html>
 
 {% comment %} 
-<!-- <!doctype html>
-<html lang="en">
-  <head>
-    <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>BloomingDen</title>
-    <style>
-      body {
-        font-family: Arial;
-        margin: 40px;
-        background-color: #f5f5f5;
-      }
 
-      nav {
-        background-color: #2e7d32;
-        padding: 10px;
-      }
-
-      nav a {
-        color: white;
-        margin-right: 20px;
-        text-decoration: none;
-        font-weight: bold;
-      }
-
-      nav a:hover {
-        text-decoration: underline;
-      }
-      .flower-container {
-        display: flex;
-        flex-wrap: wrap;
-        gap: 30px;
-      }
-
-      .flower-card {
-        background: white;
-        padding: 20px;
-        border-radius: 10px;
-        width: 220px;
-        text-align: center;
-        box-shadow: 0px 4px 10px rgba(0, 0, 0, 0.1);
-      }
-
-      .flower-card img {
-        border-radius: 10px;
-      }
-
-      .flower-card a {
-        text-decoration: none;
-        color: black;
-      }
-      .add-cart-btn {
-        background-color: #ff6f91;
-        color: white;
-        padding: 10px 18px;
-        border: none;
-        border-radius: 6px;
-        font-size: 16px;
-        cursor: pointer;
-      }
-
-      .add-cart-btn:hover {
-        background-color: #ff4f78;
-      }
-    </style>
-  </head>
-  <body>
-    <nav>
-      <a href="/">Home</a>
-      <a href="/flowers">Flowers</a>
-      <a href="/bouquets">Bouquets</a>
-      <a href="{% url 'cart_detail' %}">Cart({{ cart_item_count }})</a>
-    </nav>
-    <hr />
-    {% block content %} {% endblock %}
-  </body>
-</html> -->
 {% endcomment %} 

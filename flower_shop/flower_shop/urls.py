@@ -20,10 +20,15 @@ from django.urls import path
 from flowers import views
 from django.conf import settings
 from django.conf.urls.static import static
+from django.contrib.auth import views as auth_views
+
 
 urlpatterns = [
     path("admin/", admin.site.urls),
     path("",views.home, name='home'),
+    path("signup/", views.signup, name='signup'),
+    path("login/", auth_views.LoginView.as_view(template_name='flowers/login.html'), name='login'),
+    path("logout/", auth_views.LogoutView.as_view(next_page='home'), name='logout'),
     path("flowers/", views.flowers_list, name='flowers_list'),
     path("flowers/<int:id>/", views.flower_detail, name='flower_detail'),
     path("bouquets/", views.bouquet_list, name='bouquet_list'),
@@ -36,6 +41,9 @@ urlpatterns = [
     path("shop/", views.shop, name='shop'),
     path("cart/increase/<str:key>/", views.increase_cart_item, name='increase_cart_item'),
     path("cart/decrease/<str:key>/", views.decrease_cart_item, name='decrease_cart_item'),
+    path("plants/", views.plants_list, name='plants_list'),
+    path("plants/category/<slug:category_slug>/", views.plants_list, name='plants_by_category'),
+    path("plants/<int:pk>/", views.plant_detail, name='plant_detail'),
 ]
 
 if settings.DEBUG:  # configure URLs for media
