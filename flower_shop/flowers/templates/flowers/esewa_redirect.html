@@ -1,0 +1,14 @@
+{% extends "base.html" %}
+{% block content %}
+<div class="empty-state">
+  <p>Redirecting you to eSewa to complete payment…</p>
+</div>
+<form id="esewa-form" action="{{ esewa_url }}" method="POST">
+  {% for key, value in payment_data.items %}
+    <input type="hidden" name="{{ key }}" value="{{ value }}">
+  {% endfor %}
+</form>
+<script>
+  document.getElementById('esewa-form').submit();
+</script>
+{% endblock %}

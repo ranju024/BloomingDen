@@ -63,11 +63,18 @@ class Bouquet(models.Model):
         return self.name
     
 class Order(models.Model):
-    ''' Stores Customer Order Information'''
-    name = models.CharField(max_length=200)  # customer's name
-    phone = models.CharField(max_length=15)  # phone number
+    PAYMENT_CHOICES = [
+        ('cod', 'Cash on Delivery'),
+        ('esewa', 'eSewa'),
+        ('khalti', 'Khalti'),
+    ]
+    name = models.CharField(max_length=200)
+    phone = models.CharField(max_length=15)
     address = models.TextField()
     total_price = models.DecimalField(max_digits=8, decimal_places=2)
+    payment_method = models.CharField(max_length=10, choices=PAYMENT_CHOICES, default='cod')
+    payment_status = models.CharField(max_length=10, default='pending')
+    transaction_uuid = models.CharField(max_length=100, blank=True, null=True)
     created_at = models.DateTimeField(auto_now_add=True)
 
     def __str__(self):

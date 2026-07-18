@@ -4,9 +4,15 @@ from django.http import HttpResponse
 from django.views.decorators.http import require_POST
 from django.contrib import messages
 from django.contrib.auth import login as auth_login
+from django.urls import reverse
+from decimal import Decimal, InvalidOperation
 from .forms import SignUpForm
 from .models import Flower, Bouquet, Order, Category, Plant, Profile
 from .cart import Cart
+
+import json
+import base64
+from .esewa import build_payment_data, verify_response_signature, ESEWA_FORM_URL
 
 # Create your views here.
 def home(request):
@@ -132,26 +138,84 @@ def checkout(request):
     items, total_price = get_cart_data(request)
     if not items:
         return redirect('bouquet_list') # if nth to check out
+    
     if request.method == 'POST':
         name = request.POST.get('name', '').strip()
         phone = request.POST.get('phone', '').strip()
         address = request.POST.get('address', '').strip()
+        payment_method = request.POST.get('payment_method', 'cod')
 
         if name and phone and address:  # minimal server-side validation
             order = Order.objects.create(
                 name=name,
                 phone=phone,
                 address=address,
-                total_price=total_price
+                total_price=total_price, 
+                payment_method=payment_method
             )
             request.session['cart'] = {}  #empty the cart
             request.session.modified = True
+            if payment_method == 'esewa':
+                return redirect('esewa_initiate', order_id=order.id)
+                        
             return redirect('order_success', order_id=order.id)
         
     return render(request, "flowers/checkout.html", {
         "items": items,
         "total_price": total_price
     })
+
+def esewa_initiate(request, order_id):
+    order = get_object_or_404(Order, id=order_id)
+    success_url = request.build_absolute_uri(reverse('esewa_success'))
+    failure_url = request.build_absolute_uri(reverse('esewa_failure'))
+
+    payment_data = build_payment_data(order, success_url, failure_url)
+    order.transaction_uuid = payment_data['transaction_uuid']
+    order.save()
+
+    return render(request, "flowers/esewa_redirect.html", {
+        "payment_data": payment_data,
+        "esewa_url": ESEWA_FORM_URL,
+    })
+
+
+def esewa_success(request):
+    encoded_data = request.GET.get('data')
+    if not encoded_data:
+        return redirect('esewa_failure')
+
+    try:
+        decoded_data = json.loads(base64.b64decode(encoded_data))
+    except Exception:
+        return redirect('esewa_failure')
+
+    if not verify_response_signature(decoded_data):
+        messages.error(request, "Payment verification failed. Please contact support.")
+        return redirect('esewa_failure')
+
+    if decoded_data.get('status') != 'COMPLETE':
+        return redirect('esewa_failure')
+
+    order = get_object_or_404(Order, transaction_uuid=decoded_data.get('transaction_uuid'))
+
+    # Compare as Decimal values, not strings. This handles "150.0" vs "150.00" vs "1,500.00"
+    raw_amount = decoded_data.get('total_amount', '').replace(',', '')
+    try:
+        returned_amount = Decimal(raw_amount)
+    except InvalidOperation:
+        returned_amount = None
+
+    if returned_amount != order.total_price:
+        messages.error(request, "Payment amount mismatch. Please contact support.")
+        return redirect('esewa_failure')
+
+    order.payment_status = 'paid'
+    order.save()
+    return redirect('order_success', order_id=order.id)
+
+def esewa_failure(request):
+    return render(request, "flowers/esewa_failure.html")
 
 def order_success(request, order_id):
     order = get_object_or_404(Order, id=order_id)

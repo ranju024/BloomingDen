@@ -1,0 +1,8 @@
+{% extends "base.html" %}
+{% block content %}
+<div class="empty-state">
+  <h1>Payment not completed</h1>
+  <p>Your payment could not be processed or was cancelled.</p>
+  <a href="{% url 'checkout' %}" class="btn">Try again</a>
+</div>
+{% endblock %}

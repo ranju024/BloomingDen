@@ -264,6 +264,8 @@ form label {
 }
 
 input[type="text"],
+input[type="password"],
+input[type="email"],
 textarea {
   width: 100%;
   max-width: 420px;
@@ -275,6 +277,20 @@ textarea {
   margin-top: 6px;
   background: var(--white);
   color: var(--brown-dark);
+}
+
+form ul.errorlist {
+  color: #A32D2D;
+  font-size: 13px;
+  padding-left: 18px;
+  margin: 4px 0;
+}
+
+form .helptext {
+  font-size: 12px;
+  color: var(--text-body);
+  display: block;
+  margin-top: 4px;
 }
 
 textarea {
@@ -331,6 +347,41 @@ input:focus, textarea:focus {
   margin-top: 6px;
 }
 
+.qty-control {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.qty-btn {
+  background: var(--cream-soft);
+  color: var(--brown-dark);
+  border: 1px solid var(--border-soft);
+  border-radius: 6px;
+  width: 26px;
+  height: 26px;
+  font-size: 14px;
+  line-height: 1;
+  cursor: pointer;
+}
+
+.qty-btn:hover {
+  background: var(--border-soft);
+}
+
+.messages {
+  padding-top: 16px;
+}
+
+.message {
+  background: var(--cream-soft);
+  color: var(--brown-dark);
+  border-radius: 6px;
+  padding: 10px 16px;
+  font-size: 14px;
+  margin: 0 0 10px;
+}
+
 .order-summary-list {
   list-style: none;
   padding: 0;
@@ -342,15 +393,4 @@ input:focus, textarea:focus {
   border-bottom: 1px solid var(--border-soft);
   font-size: 14px;
   color: var(--brown-dark);
-}
-
-.messages {
-  padding-top: 16px;
-}
-.message {
-  background: var(--cream-soft);
-  color: var(--brown-dark);
-  border-radius: 6px;
-  padding: 10px 16px;
-  font-size: 14px;
 }

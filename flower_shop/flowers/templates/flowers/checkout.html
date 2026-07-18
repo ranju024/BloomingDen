@@ -23,6 +23,13 @@
     <label>Address
         <textarea name="address" required></textarea>
     </label>
+    <label>Payment method
+        <select name="payment_method">
+            <option value="cod">Cash on Delivery</option>
+            <option value="esewa">eSewa</option>
+            <option value="khalti">Khalti</option>
+        </select>
+    </label>
     <button type="submit" class="btn" style="margin-top: 10px;">Place order</button>
 </form>
 {% endblock %}
