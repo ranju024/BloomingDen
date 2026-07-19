@@ -13,6 +13,7 @@ from .cart import Cart
 import json
 import base64
 from .esewa import build_payment_data, verify_response_signature, ESEWA_FORM_URL
+from .khalti import initiate_payment, verify_payment
 
 # Create your views here.
 def home(request):
@@ -137,7 +138,7 @@ def checkout(request):
     ''' Handles checkout form submission and saves the order'''
     items, total_price = get_cart_data(request)
     if not items:
-        return redirect('bouquet_list') # if nth to check out
+        return redirect('home') # if nth to check out
     
     if request.method == 'POST':
         name = request.POST.get('name', '').strip()
@@ -155,9 +156,11 @@ def checkout(request):
             )
             request.session['cart'] = {}  #empty the cart
             request.session.modified = True
+
             if payment_method == 'esewa':
                 return redirect('esewa_initiate', order_id=order.id)
-                        
+            elif payment_method == 'khalti':
+                return redirect('khalti_initiate', order_id=order.id)           
             return redirect('order_success', order_id=order.id)
         
     return render(request, "flowers/checkout.html", {
@@ -168,7 +171,7 @@ def checkout(request):
 def esewa_initiate(request, order_id):
     order = get_object_or_404(Order, id=order_id)
     success_url = request.build_absolute_uri(reverse('esewa_success'))
-    failure_url = request.build_absolute_uri(reverse('esewa_failure'))
+    failure_url = request.build_absolute_uri(reverse('payment_failure'))
 
     payment_data = build_payment_data(order, success_url, failure_url)
     order.transaction_uuid = payment_data['transaction_uuid']
@@ -183,19 +186,19 @@ def esewa_initiate(request, order_id):
 def esewa_success(request):
     encoded_data = request.GET.get('data')
     if not encoded_data:
-        return redirect('esewa_failure')
+        return redirect('payment_failure')
 
     try:
         decoded_data = json.loads(base64.b64decode(encoded_data))
     except Exception:
-        return redirect('esewa_failure')
+        return redirect('payment_failure')
 
     if not verify_response_signature(decoded_data):
         messages.error(request, "Payment verification failed. Please contact support.")
-        return redirect('esewa_failure')
+        return redirect('payment_failure')
 
     if decoded_data.get('status') != 'COMPLETE':
-        return redirect('esewa_failure')
+        return redirect('payment_failure')
 
     order = get_object_or_404(Order, transaction_uuid=decoded_data.get('transaction_uuid'))
 
@@ -208,14 +211,56 @@ def esewa_success(request):
 
     if returned_amount != order.total_price:
         messages.error(request, "Payment amount mismatch. Please contact support.")
-        return redirect('esewa_failure')
+        return redirect('payment_failure')
 
     order.payment_status = 'paid'
     order.save()
     return redirect('order_success', order_id=order.id)
 
-def esewa_failure(request):
-    return render(request, "flowers/esewa_failure.html")
+def khalti_initiate(request, order_id):
+    order = get_object_or_404(Order, id=order_id)
+    return_url = request.build_absolute_uri(reverse('khalti_verify'))
+    website_url = request.build_absolute_uri('/')
+
+    try:
+        data = initiate_payment(order, return_url, website_url)
+    except Exception:
+        messages.error(request, "Could not connect to Khalti. Please try again.")
+        return redirect('checkout')
+
+    order.transaction_uuid = data.get('pidx')
+    order.save()
+    return redirect(data.get('payment_url'))
+
+
+def khalti_verify(request):
+    pidx = request.GET.get('pidx')
+    if not pidx:
+        return redirect('payment_failure')
+
+    order = get_object_or_404(Order, transaction_uuid=pidx)
+
+    try:
+        result = verify_payment(pidx)
+    except Exception:
+        messages.error(request, "Could not verify payment with Khalti.")
+        return redirect('payment_failure')
+
+    if result.get('status') != 'Completed':
+        return redirect('payment_failure')
+
+    paid_amount = Decimal(result.get('total_amount', 0)) / 100
+    if paid_amount != order.total_price:
+        messages.error(request, "Payment amount mismatch. Please contact support.")
+        return redirect('payment_failure')
+
+    order.payment_status = 'paid'
+    order.save()
+    return redirect('order_success', order_id=order.id)
+
+
+def payment_failure(request):
+    return render(request, "flowers/payment_failure.html")
 
 def order_success(request, order_id):
     order = get_object_or_404(Order, id=order_id)

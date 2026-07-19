@@ -46,7 +46,9 @@ urlpatterns = [
     path("plants/<int:pk>/", views.plant_detail, name='plant_detail'),
     path("payment/esewa/initiate/<int:order_id>/", views.esewa_initiate, name='esewa_initiate'),
     path("payment/esewa/success/", views.esewa_success, name='esewa_success'),
-    path("payment/esewa/failure/", views.esewa_failure, name='esewa_failure'),    
+    path("payment/esewa/failure/", views.payment_failure, name='payment_failure'),   
+    path("payment/khalti/initiate/<int:order_id>/", views.khalti_initiate, name='khalti_initiate'),
+    path("payment/khalti/verify/", views.khalti_verify, name='khalti_verify'), 
 ]
 
 if settings.DEBUG:  # configure URLs for media
