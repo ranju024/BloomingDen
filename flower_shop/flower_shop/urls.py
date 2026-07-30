@@ -49,6 +49,14 @@ urlpatterns = [
     path("payment/esewa/failure/", views.payment_failure, name='payment_failure'),   
     path("payment/khalti/initiate/<int:order_id>/", views.khalti_initiate, name='khalti_initiate'),
     path("payment/khalti/verify/", views.khalti_verify, name='khalti_verify'), 
+    path("marketplace/", views.listing_list, name='listing_list'),
+    path("marketplace/new/", views.listing_create, name='listing_create'),
+    path("marketplace/mine/", views.my_listings, name='my_listings'),
+    path("marketplace/<int:pk>/", views.listing_detail, name='listing_detail'),
+    path("marketplace/<int:pk>/message/", views.start_conversation, name='start_conversation'),
+    path("marketplace/<int:pk>/sold/", views.mark_sold, name='mark_sold'),
+    path("inbox/", views.conversation_list, name='conversation_list'),
+    path("inbox/<int:pk>/", views.conversation_detail, name='conversation_detail'),
 ]
 
 if settings.DEBUG:  # configure URLs for media

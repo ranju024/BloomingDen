@@ -4,10 +4,12 @@ from django.http import HttpResponse
 from django.views.decorators.http import require_POST
 from django.contrib import messages
 from django.contrib.auth import login as auth_login
+from django.contrib.auth.decorators import login_required
+from django.db.models import Q
 from django.urls import reverse
 from decimal import Decimal, InvalidOperation
-from .forms import SignUpForm
-from .models import Flower, Bouquet, Order, Category, Plant, Profile
+from .forms import SignUpForm, PlantListingForm
+from .models import Flower, Bouquet, Order, Category, Plant, Profile, PlantListing, Conversation, Message
 from .cart import Cart
 
 import json
@@ -55,6 +57,7 @@ def bouquet_detail(request, pk):
     ''' Finds the bouquet using its ID and sends it to flowers/bouquet_detail.html'''
     bouquet = get_object_or_404(Bouquet, pk=pk)
     return render(request, "flowers/bouquet_detail.html", {"bouquet": bouquet})
+
 
 @require_POST  # reject anything that isn't POST
 def add_to_cart(request, item_type, pk):
@@ -289,3 +292,80 @@ def plants_list(request, category_slug=None):
 def plant_detail(request, pk):
     plant = get_object_or_404(Plant, pk=pk)
     return render(request, "flowers/plant_detail.html", {"plant": plant})
+
+def listing_list(request):
+    listings = PlantListing.objects.filter(status='available').order_by('-created_at')
+    return render(request, "flowers/listing_list.html", {"listings": listings})
+
+def listing_detail(request, pk):
+    listing = get_object_or_404(PlantListing, pk=pk)
+    return render(request, "flowers/listing_detail.html", {"listing": listing})
+
+
+@login_required
+def listing_create(request):
+    if request.method == 'POST':
+        form = PlantListingForm(request.POST, request.FILES)
+        if form.is_valid():
+            listing = form.save(commit=False)
+            listing.seller = request.user
+            listing.save()
+            messages.success(request, "Your plant is now listed!")
+            return redirect('listing_detail', pk=listing.pk)
+    else:
+        form = PlantListingForm()
+    return render(request, "flowers/listing_form.html", {"form": form})
+
+
+@login_required
+def my_listings(request):
+    listings = PlantListing.objects.filter(seller=request.user).order_by('-created_at')
+    return render(request, "flowers/my_listings.html", {"listings": listings})
+
+
+@require_POST
+@login_required
+def mark_sold(request, pk):
+    listing = get_object_or_404(PlantListing, pk=pk, seller=request.user)
+    listing.status = 'sold'
+    listing.save()
+    messages.success(request, f"{listing.name} marked as sold.")
+    return redirect('my_listings')
+
+
+@login_required
+def start_conversation(request, pk):
+    listing = get_object_or_404(PlantListing, pk=pk)
+    if listing.seller == request.user:
+        messages.error(request, "You can't message yourself about your own listing.")
+        return redirect('listing_detail', pk=pk)
+
+    conversation, created = Conversation.objects.get_or_create(
+        listing=listing, buyer=request.user,
+        defaults={'seller': listing.seller}
+    )
+    return redirect('conversation_detail', pk=conversation.pk)
+
+
+@login_required
+def conversation_list(request):
+    conversations = Conversation.objects.filter(
+        Q(buyer=request.user) | Q(seller=request.user)
+    ).order_by('-created_at')
+    return render(request, "flowers/conversation_list.html", {"conversations": conversations})
+
+
+@login_required
+def conversation_detail(request, pk):
+    conversation = get_object_or_404(Conversation, pk=pk)
+    if request.user != conversation.buyer and request.user != conversation.seller:
+        return HttpResponse(status=403)
+
+    if request.method == 'POST':
+        body = request.POST.get('body', '').strip()
+        if body:
+            Message.objects.create(conversation=conversation, sender=request.user, body=body)
+        return redirect('conversation_detail', pk=pk)
+
+    conversation.messages.exclude(sender=request.user).update(is_read=True)
+    return render(request, "flowers/conversation_detail.html", {"conversation": conversation})

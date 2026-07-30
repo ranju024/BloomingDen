@@ -1,0 +1,20 @@
+{% extends "base.html" %}
+{% block content %}
+<div class="page-section">
+  <h1>Inbox</h1>
+</div>
+<table>
+  <thead><tr><th>Plant</th><th>With</th><th>Started</th></tr></thead>
+  <tbody>
+    {% for conv in conversations %}
+    <tr>
+      <td><a href="{% url 'conversation_detail' conv.pk %}">{{ conv.listing.name }}</a></td>
+      <td>
+        {% if request.user == conv.buyer %}{{ conv.seller.username }}{% else %}{{ conv.buyer.username }}{% endif %}
+      </td>
+      <td>{{ conv.created_at|date:"M d, Y" }}</td>
+    </tr>
+    {% endfor %}
+  </tbody>
+</table>
+{% endblock %}

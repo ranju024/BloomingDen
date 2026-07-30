@@ -1,0 +1,25 @@
+{% extends "base.html" %}
+{% load static %}
+{% block content %}
+<div class="page-section" style="display:flex; justify-content:space-between; align-items:center;">
+  <h1>Plant marketplace</h1>
+  {% if user.is_authenticated %}
+    <a href="{% url 'listing_create' %}" class="btn">Sell a plant</a>
+  {% endif %}
+</div>
+<div class="product-grid">
+  {% for listing in listings %}
+  <div class="product-card">
+    <a href="{% url 'listing_detail' listing.pk %}">
+      {% if listing.image %}
+        <img src="{{ listing.image.url }}" alt="{{ listing.name }}">
+      {% else %}
+        <img src="{% static 'images/no-image.jpg' %}" alt="No image available">
+      {% endif %}
+      <h3>{{ listing.name }}</h3>
+    </a>
+    <p class="price">Rs. {{ listing.price }} · {{ listing.get_condition_display }}</p>
+  </div>
+  {% endfor %}
+</div>
+{% endblock %}

@@ -1,0 +1,11 @@
+{% extends "base.html" %}
+{% block content %}
+<div class="page-section">
+  <h1>List a plant for sale</h1>
+</div>
+<form method="post" enctype="multipart/form-data" style="max-width: 480px;">
+    {% csrf_token %}
+    {{ form.as_p }}
+    <button type="submit" class="btn">Publish listing</button>
+</form>
+{% endblock %}

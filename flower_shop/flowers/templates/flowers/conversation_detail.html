@@ -1,0 +1,23 @@
+{% extends "base.html" %}
+{% block content %}
+<div class="page-section">
+  <h1>{{ conversation.listing.name }}</h1>
+  <a href="{% url 'conversation_list' %}" class="back-link tight">← Back to inbox</a>
+</div>
+
+<div class="message-thread">
+  {% for message in conversation.messages.all %}
+    <div class="message-bubble {% if message.sender == request.user %}mine{% endif %}">
+      <p class="sender">{{ message.sender.username }}</p>
+      <p>{{ message.body }}</p>
+      <p class="timestamp">{{ message.created_at|date:"M d, g:i A" }}</p>
+    </div>
+  {% endfor %}
+</div>
+
+<form method="post" style="margin-top: 20px;">
+    {% csrf_token %}
+    <textarea name="body" placeholder="Write a message..." required></textarea>
+    <button type="submit" class="btn" style="margin-top: 10px;">Send</button>
+</form>
+{% endblock %}
