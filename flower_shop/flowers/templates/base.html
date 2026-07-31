@@ -13,6 +13,9 @@
     <nav>
       <div class="container">
         <a href="/" class="nav-brand">BloomingDen</a>
+        <form action="{% url 'search' %}" method="get" class="nav-search">
+          <input type="text" name="q" placeholder="Search plants, flowers..." value="{{ request.GET.q }}">
+        </form>
         <div class="nav-links">
           <a href="{% url 'shop' %}">Shop</a>
           <a href="{% url 'listing_list' %}">Marketplace</a>

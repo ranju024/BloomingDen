@@ -295,7 +295,31 @@ def plant_detail(request, pk):
 
 def listing_list(request):
     listings = PlantListing.objects.filter(status='available').order_by('-created_at')
-    return render(request, "flowers/listing_list.html", {"listings": listings})
+    condition = request.GET.get('condition', '')
+    min_price = request.GET.get('min_price', '')
+    max_price = request.GET.get('max_price', '')
+
+    if condition:
+        listings = listings.filter(condition=condition)
+
+    if min_price:
+        try:
+            listings = listings.filter(price__gte=Decimal(min_price))
+        except InvalidOperation:
+            pass
+
+    if max_price:
+        try:
+            listings = listings.filter(price__lte=Decimal(max_price))
+        except InvalidOperation:
+            pass
+
+    return render(request, "flowers/listing_list.html", {
+        "listings": listings,
+        "condition": condition,
+        "min_price": min_price,
+        "max_price": max_price,
+    })
 
 def listing_detail(request, pk):
     listing = get_object_or_404(PlantListing, pk=pk)
@@ -369,3 +393,24 @@ def conversation_detail(request, pk):
 
     conversation.messages.exclude(sender=request.user).update(is_read=True)
     return render(request, "flowers/conversation_detail.html", {"conversation": conversation})
+
+def search(request):
+    query = request.GET.get('q', '').strip()
+    flowers = bouquets = plants = listings = []
+
+    if query:
+        flowers = Flower.objects.filter(Q(name__icontains=query) | Q(description__icontains=query))
+        bouquets = Bouquet.objects.filter(Q(name__icontains=query) | Q(description__icontains=query))
+        plants = Plant.objects.filter(Q(name__icontains=query) | Q(description__icontains=query))
+        listings = PlantListing.objects.filter(
+            Q(name__icontains=query) | Q(description__icontains=query),
+            status='available'
+        )
+
+    return render(request, "flowers/search_results.html", {
+        "query": query,
+        "flowers": flowers,
+        "bouquets": bouquets,
+        "plants": plants,
+        "listings": listings,
+    })

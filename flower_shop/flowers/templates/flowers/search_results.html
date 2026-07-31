@@ -1,0 +1,73 @@
+{% extends "base.html" %}
+{% load static %}
+{% block content %}
+<div class="page-section">
+  <h1>Search results for "{{ query }}"</h1>
+</div>
+
+{% if not flowers and not bouquets and not plants and not listings %}
+<div class="empty-state">
+  <p>No results found. Try a different search.</p>
+</div>
+{% endif %}
+
+{% if bouquets %}
+<h2>Bouquets</h2>
+<div class="product-grid">
+  {% for item in bouquets %}
+  <div class="product-card">
+    <a href="{% url 'bouquet_detail' item.pk %}">
+      {% if item.image %}<img src="{{ item.image.url }}" alt="{{ item.name }}">{% else %}<img src="{% static 'images/no-image.jpg' %}" alt="No image">{% endif %}
+      <h3>{{ item.name }}</h3>
+    </a>
+    <p class="price">Rs. {{ item.price }}</p>
+  </div>
+  {% endfor %}
+</div>
+{% endif %}
+
+{% if flowers %}
+<h2>Flowers</h2>
+<div class="product-grid">
+  {% for item in flowers %}
+  <div class="product-card">
+    <a href="/flowers/{{ item.id }}">
+      {% if item.image %}<img src="{{ item.image.url }}" alt="{{ item.name }}">{% else %}<img src="{% static 'images/no-image.jpg' %}" alt="No image">{% endif %}
+      <h3>{{ item.name }}</h3>
+    </a>
+    <p class="price">Rs. {{ item.price }}</p>
+  </div>
+  {% endfor %}
+</div>
+{% endif %}
+
+{% if plants %}
+<h2>Plants</h2>
+<div class="product-grid">
+  {% for item in plants %}
+  <div class="product-card">
+    <a href="{% url 'plant_detail' item.pk %}">
+      {% if item.image %}<img src="{{ item.image.url }}" alt="{{ item.name }}">{% else %}<img src="{% static 'images/no-image.jpg' %}" alt="No image">{% endif %}
+      <h3>{{ item.name }}</h3>
+    </a>
+    <p class="price">Rs. {{ item.price }}</p>
+  </div>
+  {% endfor %}
+</div>
+{% endif %}
+
+{% if listings %}
+<h2>Marketplace listings</h2>
+<div class="product-grid">
+  {% for item in listings %}
+  <div class="product-card">
+    <a href="{% url 'listing_detail' item.pk %}">
+      {% if item.image %}<img src="{{ item.image.url }}" alt="{{ item.name }}">{% else %}<img src="{% static 'images/no-image.jpg' %}" alt="No image">{% endif %}
+      <h3>{{ item.name }}</h3>
+    </a>
+    <p class="price">Rs. {{ item.price }}</p>
+  </div>
+  {% endfor %}
+</div>
+{% endif %}
+{% endblock %}

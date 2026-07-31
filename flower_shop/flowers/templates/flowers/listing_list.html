@@ -7,6 +7,18 @@
     <a href="{% url 'listing_create' %}" class="btn">Sell a plant</a>
   {% endif %}
 </div>
+<form method="get" class="filter-bar">
+  <select name="condition">
+    <option value="">Any condition</option>
+    <option value="new" {% if condition == 'new' %}selected{% endif %}>New</option>
+    <option value="like_new" {% if condition == 'like_new' %}selected{% endif %}>Like New</option>
+    <option value="good" {% if condition == 'good' %}selected{% endif %}>Good</option>
+    <option value="fair" {% if condition == 'fair' %}selected{% endif %}>Fair</option>
+  </select>
+  <input type="text" name="min_price" placeholder="Min price" value="{{ min_price }}">
+  <input type="text" name="max_price" placeholder="Max price" value="{{ max_price }}">
+  <button type="submit" class="btn">Filter</button>
+</form>
 <div class="product-grid">
   {% for listing in listings %}
   <div class="product-card">

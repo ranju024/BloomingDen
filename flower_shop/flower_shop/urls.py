@@ -57,6 +57,7 @@ urlpatterns = [
     path("marketplace/<int:pk>/sold/", views.mark_sold, name='mark_sold'),
     path("inbox/", views.conversation_list, name='conversation_list'),
     path("inbox/<int:pk>/", views.conversation_detail, name='conversation_detail'),
+    path("search/", views.search, name='search'),
 ]
 
 if settings.DEBUG:  # configure URLs for media
