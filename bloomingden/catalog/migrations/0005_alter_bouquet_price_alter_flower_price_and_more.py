@@ -6,7 +6,7 @@ from django.db import migrations, models
 class Migration(migrations.Migration):
 
     dependencies = [
-        ("flowers", "0004_order"),
+        ("catalog", "0004_order"),
     ]
 
     operations = [

@@ -1,5 +1,5 @@
 """
-WSGI config for flower_shop project.
+WSGI config for bloomingden project.
 
 It exposes the WSGI callable as a module-level variable named ``application``.
 
@@ -11,6 +11,6 @@ import os
 
 from django.core.wsgi import get_wsgi_application
 
-os.environ.setdefault("DJANGO_SETTINGS_MODULE", "flower_shop.settings")
+os.environ.setdefault("DJANGO_SETTINGS_MODULE", "bloomingden.settings")
 
 application = get_wsgi_application()

@@ -5,7 +5,7 @@
   <h1>Search results for "{{ query }}"</h1>
 </div>
 
-{% if not flowers and not bouquets and not plants and not listings %}
+{% if not catalog and not bouquets and not plants and not listings %}
 <div class="empty-state">
   <p>No results found. Try a different search.</p>
 </div>
@@ -26,12 +26,12 @@
 </div>
 {% endif %}
 
-{% if flowers %}
-<h2>Flowers</h2>
+{% if catalog %}
+<h2>catalog</h2>
 <div class="product-grid">
-  {% for item in flowers %}
+  {% for item in catalog %}
   <div class="product-card">
-    <a href="/flowers/{{ item.id }}">
+    <a href="/catalog/{{ item.id }}">
       {% if item.image %}<img src="{{ item.image.url }}" alt="{{ item.name }}">{% else %}<img src="{% static 'images/no-image.jpg' %}" alt="No image">{% endif %}
       <h3>{{ item.name }}</h3>
     </a>

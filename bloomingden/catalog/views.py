@@ -36,27 +36,27 @@ def signup(request):
             return redirect('home')
     else:
         form = SignUpForm()
-    return render(request, "flowers/signup.html", {"form": form})
+    return render(request, "catalog/signup.html", {"form": form})
 
-def flowers_list(request):
-    ''' get all flowers from the database and send them to 
-    a template called flowers.html'''
-    flowers = Flower.objects.all()
-    return render(request, "flowers/flowers.html", {"flowers": flowers})
+def catalog_list(request):
+    ''' get all catalog from the database and send them to 
+    a template called catalog.html'''
+    catalog = Flower.objects.all()
+    return render(request, "catalog/catalog.html", {"catalog": catalog})
 
 def flower_detail(request, id):
     flower = get_object_or_404(Flower, id=id)
-    return render(request, "flowers/flower_detail.html", {"flower": flower})
+    return render(request, "catalog/flower_detail.html", {"flower": flower})
 
 def bouquet_list(request):
-    ''' fetches all bouquets from the database and sends them to flowers/bouquet_list.html template'''
+    ''' fetches all bouquets from the database and sends them to catalog/bouquet_list.html template'''
     bouquets = Bouquet.objects.all()
-    return render(request, "flowers/bouquet_list.html", {"bouquets": bouquets})
+    return render(request, "catalog/bouquet_list.html", {"bouquets": bouquets})
 
 def bouquet_detail(request, pk):
-    ''' Finds the bouquet using its ID and sends it to flowers/bouquet_detail.html'''
+    ''' Finds the bouquet using its ID and sends it to catalog/bouquet_detail.html'''
     bouquet = get_object_or_404(Bouquet, pk=pk)
-    return render(request, "flowers/bouquet_detail.html", {"bouquet": bouquet})
+    return render(request, "catalog/bouquet_detail.html", {"bouquet": bouquet})
 
 
 @require_POST  # reject anything that isn't POST
@@ -110,7 +110,7 @@ def cart_detail(request):
         total_price += item['subtotal']
 
     # Send cart items to template    
-    return render(request, "flowers/cart_detail.html", {  
+    return render(request, "catalog/cart_detail.html", {  
         "items": items,
         "total_price": total_price
         })  
@@ -166,7 +166,7 @@ def checkout(request):
                 return redirect('khalti_initiate', order_id=order.id)           
             return redirect('order_success', order_id=order.id)
         
-    return render(request, "flowers/checkout.html", {
+    return render(request, "catalog/checkout.html", {
         "items": items,
         "total_price": total_price
     })
@@ -180,7 +180,7 @@ def esewa_initiate(request, order_id):
     order.transaction_uuid = payment_data['transaction_uuid']
     order.save()
 
-    return render(request, "flowers/esewa_redirect.html", {
+    return render(request, "catalog/esewa_redirect.html", {
         "payment_data": payment_data,
         "esewa_url": ESEWA_FORM_URL,
     })
@@ -263,14 +263,14 @@ def khalti_verify(request):
 
 
 def payment_failure(request):
-    return render(request, "flowers/payment_failure.html")
+    return render(request, "catalog/payment_failure.html")
 
 def order_success(request, order_id):
     order = get_object_or_404(Order, id=order_id)
-    return render(request, "flowers/order_success.html", {"order": order})
+    return render(request, "catalog/order_success.html", {"order": order})
 
 def shop(request):
-    return render(request, "flowers/shop.html")
+    return render(request, "catalog/shop.html")
 
 
 def plants_list(request, category_slug=None):
@@ -283,7 +283,7 @@ def plants_list(request, category_slug=None):
         category = get_object_or_404(Category, slug=category_slug)
         plants = plants.filter(category=category)
 
-    return render(request, "flowers/plants_list.html", {
+    return render(request, "catalog/plants_list.html", {
         "plants": plants,
         "category": category,
         "subcategories": subcategories,
@@ -291,7 +291,7 @@ def plants_list(request, category_slug=None):
 
 def plant_detail(request, pk):
     plant = get_object_or_404(Plant, pk=pk)
-    return render(request, "flowers/plant_detail.html", {"plant": plant})
+    return render(request, "catalog/plant_detail.html", {"plant": plant})
 
 def listing_list(request):
     listings = PlantListing.objects.filter(status='available').order_by('-created_at')
@@ -314,7 +314,7 @@ def listing_list(request):
         except InvalidOperation:
             pass
 
-    return render(request, "flowers/listing_list.html", {
+    return render(request, "catalog/listing_list.html", {
         "listings": listings,
         "condition": condition,
         "min_price": min_price,
@@ -323,7 +323,7 @@ def listing_list(request):
 
 def listing_detail(request, pk):
     listing = get_object_or_404(PlantListing, pk=pk)
-    return render(request, "flowers/listing_detail.html", {"listing": listing})
+    return render(request, "catalog/listing_detail.html", {"listing": listing})
 
 
 @login_required
@@ -338,13 +338,13 @@ def listing_create(request):
             return redirect('listing_detail', pk=listing.pk)
     else:
         form = PlantListingForm()
-    return render(request, "flowers/listing_form.html", {"form": form})
+    return render(request, "catalog/listing_form.html", {"form": form})
 
 
 @login_required
 def my_listings(request):
     listings = PlantListing.objects.filter(seller=request.user).order_by('-created_at')
-    return render(request, "flowers/my_listings.html", {"listings": listings})
+    return render(request, "catalog/my_listings.html", {"listings": listings})
 
 
 @require_POST
@@ -376,7 +376,7 @@ def conversation_list(request):
     conversations = Conversation.objects.filter(
         Q(buyer=request.user) | Q(seller=request.user)
     ).order_by('-created_at')
-    return render(request, "flowers/conversation_list.html", {"conversations": conversations})
+    return render(request, "catalog/conversation_list.html", {"conversations": conversations})
 
 
 @login_required
@@ -392,14 +392,14 @@ def conversation_detail(request, pk):
         return redirect('conversation_detail', pk=pk)
 
     conversation.messages.exclude(sender=request.user).update(is_read=True)
-    return render(request, "flowers/conversation_detail.html", {"conversation": conversation})
+    return render(request, "catalog/conversation_detail.html", {"conversation": conversation})
 
 def search(request):
     query = request.GET.get('q', '').strip()
-    flowers = bouquets = plants = listings = []
+    catalog = bouquets = plants = listings = []
 
     if query:
-        flowers = Flower.objects.filter(Q(name__icontains=query) | Q(description__icontains=query))
+        catalog = Flower.objects.filter(Q(name__icontains=query) | Q(description__icontains=query))
         bouquets = Bouquet.objects.filter(Q(name__icontains=query) | Q(description__icontains=query))
         plants = Plant.objects.filter(Q(name__icontains=query) | Q(description__icontains=query))
         listings = PlantListing.objects.filter(
@@ -407,9 +407,9 @@ def search(request):
             status='available'
         )
 
-    return render(request, "flowers/search_results.html", {
+    return render(request, "catalog/search_results.html", {
         "query": query,
-        "flowers": flowers,
+        "catalog": catalog,
         "bouquets": bouquets,
         "plants": plants,
         "listings": listings,

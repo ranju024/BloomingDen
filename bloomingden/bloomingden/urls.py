@@ -1,5 +1,5 @@
 """
-URL configuration for flower_shop project.
+URL configuration for bloomingden project.
 
 The `urlpatterns` list routes URLs to views. For more information please see:
     https://docs.djangoproject.com/en/5.2/topics/http/urls/
@@ -17,7 +17,7 @@ Including another URLconf
 
 from django.contrib import admin
 from django.urls import path
-from flowers import views
+from catalog import views
 from django.conf import settings
 from django.conf.urls.static import static
 from django.contrib.auth import views as auth_views
@@ -27,10 +27,10 @@ urlpatterns = [
     path("admin/", admin.site.urls),
     path("",views.home, name='home'),
     path("signup/", views.signup, name='signup'),
-    path("login/", auth_views.LoginView.as_view(template_name='flowers/login.html'), name='login'),
+    path("login/", auth_views.LoginView.as_view(template_name='catalog/login.html'), name='login'),
     path("logout/", auth_views.LogoutView.as_view(next_page='home'), name='logout'),
-    path("flowers/", views.flowers_list, name='flowers_list'),
-    path("flowers/<int:id>/", views.flower_detail, name='flower_detail'),
+    path("catalog/", views.catalog_list, name='catalog_list'),
+    path("catalog/<int:id>/", views.flower_detail, name='flower_detail'),
     path("bouquets/", views.bouquet_list, name='bouquet_list'),
     path("bouquets/<int:pk>/", views.bouquet_detail, name='bouquet_detail'),
     path("cart/add/<str:item_type>/<int:pk>/", views.add_to_cart, name='add_to_cart'),

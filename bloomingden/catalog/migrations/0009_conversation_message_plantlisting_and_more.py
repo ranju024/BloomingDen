@@ -8,7 +8,7 @@ from django.db import migrations, models
 class Migration(migrations.Migration):
 
     dependencies = [
-        ("flowers", "0008_order_payment_method_order_payment_status_and_more"),
+        ("catalog", "0008_order_payment_method_order_payment_status_and_more"),
         migrations.swappable_dependency(settings.AUTH_USER_MODEL),
     ]
 
@@ -64,7 +64,7 @@ class Migration(migrations.Migration):
                     models.ForeignKey(
                         on_delete=django.db.models.deletion.CASCADE,
                         related_name="messages",
-                        to="flowers.conversation",
+                        to="catalog.conversation",
                     ),
                 ),
                 (
@@ -137,7 +137,7 @@ class Migration(migrations.Migration):
             field=models.ForeignKey(
                 on_delete=django.db.models.deletion.CASCADE,
                 related_name="conversations",
-                to="flowers.plantlisting",
+                to="catalog.plantlisting",
             ),
         ),
         migrations.AlterUniqueTogether(

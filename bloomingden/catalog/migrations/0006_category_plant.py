@@ -7,7 +7,7 @@ from django.db import migrations, models
 class Migration(migrations.Migration):
 
     dependencies = [
-        ("flowers", "0005_alter_bouquet_price_alter_flower_price_and_more"),
+        ("catalog", "0005_alter_bouquet_price_alter_flower_price_and_more"),
     ]
 
     operations = [
@@ -32,7 +32,7 @@ class Migration(migrations.Migration):
                         null=True,
                         on_delete=django.db.models.deletion.CASCADE,
                         related_name="children",
-                        to="flowers.category",
+                        to="catalog.category",
                     ),
                 ),
             ],
@@ -66,7 +66,7 @@ class Migration(migrations.Migration):
                         null=True,
                         on_delete=django.db.models.deletion.SET_NULL,
                         related_name="plants",
-                        to="flowers.category",
+                        to="catalog.category",
                     ),
                 ),
             ],

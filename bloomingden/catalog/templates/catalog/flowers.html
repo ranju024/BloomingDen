@@ -2,13 +2,13 @@
 {% load static %}
 {% block content %}
 <div class="page-section">
-  <h1>Our flowers</h1>
+  <h1>Our catalog</h1>
   <a href="{% url 'shop' %}" class="back-link tight">← Back to shop</a>
 </div>
 <div class="product-grid">
-  {% for flower in flowers %}
+  {% for flower in catalog %}
   <div class="product-card">
-    <a href="/flowers/{{ flower.id }}">
+    <a href="/catalog/{{ flower.id }}">
       {% if flower.image %}
         <img src="{{ flower.image.url }}" alt="{{ flower.name }}">
       {% else %}
@@ -26,12 +26,12 @@
 <!-- {% extends "base.html" %}
 {% load static %}
 {% block content %}
-<h1>Our Flowers 🌸</h1>
-show each flower on the database; 'flowers' returned by flowers_list in views.py 
+<h1>Our catalog 🌸</h1>
+show each flower on the database; 'catalog' returned by catalog_list in views.py 
 <div class="flower-container">
-  {% for flower in flowers %}
+  {% for flower in catalog %}
   <div class="flower-card">
-    <a href="/flowers/{{ flower.id }}">
+    <a href="/catalog/{{ flower.id }}">
       {% if flower.image %}
         <img src="{{ flower.image.url }}" width="200">
       {% else %}
@@ -39,7 +39,7 @@ show each flower on the database; 'flowers' returned by flowers_list in views.py
       {% endif %}
     </a>
     <h2>
-      <a href="/flowers/{{ flower.id }}"> {{ flower.name }} </a>
+      <a href="/catalog/{{ flower.id }}"> {{ flower.name }} </a>
     </h2>
     <p>Price: Rs {{ flower.price }}</p>
   </div>

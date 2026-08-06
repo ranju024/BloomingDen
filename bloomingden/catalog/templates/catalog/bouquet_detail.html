@@ -19,9 +19,9 @@
         <button class="add-cart-btn" style="width:auto; padding: 10px 24px;">Add to cart</button>
     </form>
 
-    <p style="margin-top: 20px;"><strong>Flowers in this bouquet:</strong></p>
+    <p style="margin-top: 20px;"><strong>catalog in this bouquet:</strong></p>
     <div class="tag-list">
-      {% for flower in bouquet.flowers.all %}
+      {% for flower in bouquet.catalog.all %}
       <span>{{ flower.name }}</span>
       {% endfor %}
     </div>
@@ -56,9 +56,9 @@
     </button>
 </form>
 
-<p><strong>Flowers in this bouquet:</strong></p>
+<p><strong>catalog in this bouquet:</strong></p>
 <div>
-  {% for flower in bouquet.flowers.all %}
+  {% for flower in bouquet.catalog.all %}
   <span>{{ flower.name }}</span>
   {% endfor %}
 </div>

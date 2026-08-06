@@ -14,7 +14,7 @@
       <div class="container">
         <a href="/" class="nav-brand">BloomingDen</a>
         <form action="{% url 'search' %}" method="get" class="nav-search">
-          <input type="text" name="q" placeholder="Search plants, flowers..." value="{{ request.GET.q }}">
+          <input type="text" name="q" placeholder="Search plants, catalog..." value="{{ request.GET.q }}">
         </form>
         <div class="nav-links">
           <a href="{% url 'shop' %}">Shop</a>
@@ -46,7 +46,7 @@
       {% block content %} {% endblock %}
     </div>
     <footer>
-      <p>&copy; 2026 BloomingDen. Fresh flowers, delivered with care.</p>
+      <p>&copy; 2026 BloomingDen. Fresh catalog, delivered with care.</p>
     </footer>
   </body>
 </html>

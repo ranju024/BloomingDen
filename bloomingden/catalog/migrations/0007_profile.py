@@ -8,7 +8,7 @@ from django.db import migrations, models
 class Migration(migrations.Migration):
 
     dependencies = [
-        ("flowers", "0006_category_plant"),
+        ("catalog", "0006_category_plant"),
         migrations.swappable_dependency(settings.AUTH_USER_MODEL),
     ]
 
