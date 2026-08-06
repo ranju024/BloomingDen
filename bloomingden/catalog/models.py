@@ -1,5 +1,6 @@
 from django.db import models
 from django.utils.text import slugify
+from django.urls import reverse
 from django.contrib.auth.models import User
 
 # Create your models here.
@@ -17,19 +18,78 @@ class Profile(models.Model):
     
 class Category(models.Model):
     name = models.CharField(max_length=100)
-    slug = models.SlugField(unique=True, blank=True)
-    parent = models.ForeignKey('self', null=True, blank=True, on_delete=models.CASCADE, related_name='children')
+    slug = models.SlugField(unique=True, blank=True) #SEO-friendly URL
+    parent = models.ForeignKey('self', on_delete=models.CASCADE, null=True, blank=True, related_name='children') # supports unlimited nesting
+
+    image = models.ImageField(upload_to="categories/", blank=True, null=True, )
+    description = models.TextField(blank=True)
+    sort_order = models.PositiveIntegerField(default=0)  #control display order
+    is_active = models.BooleanField(default=True)  # hide categories without deleting
+    is_featured = models.BooleanField(default=False)  # show on homepage
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
 
     class Meta:
+        ordering = ["sort_order", "name"]
+        verbose_name = "Category"
         verbose_name_plural = "Categories"
 
-    def __str__(self):
-        return self.name
 
     def save(self, *args, **kwargs):
         if not self.slug:
             self.slug = slugify(self.name)
         super().save(*args, **kwargs)
+
+    def __str__(self):
+        if self.parent:
+            return f"{self.parent.name} -> {self.name}"
+        return self.name
+
+
+class Product(models.Model):
+    STATUS_CHOICES = [
+        ("draft", "Draft"),
+        ("active", "Active"),
+        ("out_of_stock", "Out of Stock"),
+        ("archived", "Archived"),
+    ]
+    CONDITION_CHOICES = [
+        ("new", "New"),
+        ("used", "Used"),
+    ]
+    seller = models.ForeignKey(User, on_delete=models.CASCADE, related_name="products", )
+    category = models.ForeignKey(Category, on_delete=models.PROTECT, related_name="products",)
+    name = models.CharField(max_length=200)
+    slug = models.SlugField(unique=True, blank=True, )
+    description = models.TextField()
+    price = models.DecimalField(max_digits=10, decimal_places=2, )
+    stock = models.PositiveIntegerField(default=0)
+    image = models.ImageField(upload_to="products/", blank=True, null=True, )
+    status = models.CharField(max_length=20, choices=STATUS_CHOICES, default="draft",)
+    condition = models.CharField(max_length=10, choices=CONDITION_CHOICES, default="new",)
+    is_featured = models.BooleanField(default=False)    
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+
+    def save(self, *args, **kwargs):
+        if not self.slug:
+            self.slug = slugify(self.name)
+
+        super().save(*args, **kwargs)
+
+    def __str__(self):
+        return self.name
+
+
+class ProductImage(models.Model):
+    product = models.ForeignKey(
+        Product, 
+        on_delete=models.CASCADE,
+        related_name="images",
+    )
+    image = models.ImageField(upload_to="products/")
+    is_primary = models.BooleanField(default=False)
+    sort_order = models.PositiveIntegerField(default=0)
 
 
 class Plant(models.Model):
