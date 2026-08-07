@@ -1,0 +1,36 @@
+{% extends "base.html" %}
+
+{% block content %}
+
+{% with image=product.primary_image %}
+    {% if image %}
+        <img src="{{ image.image.url }}" alt="{{ product.name }}" width="350">
+    {% endif %}
+{% endwith %}
+
+<h2>{{ product.name }}</h2>
+
+<p><strong>Category:</strong> {{ product.category }}</p>
+
+<p><strong>Price:</strong> Rs. {{ product.price }}</p>
+
+<p><strong>Stock:</strong> {{ product.stock }}</p>
+
+<p>{{ product.description }}</p>
+
+<h3>Related Products</h3>
+
+{% for item in related_products %}
+
+    <p>
+        {{ item.name }} -
+        Rs. {{ item.price }}
+    </p>
+
+{% empty %}
+
+    <p>No related products.</p>
+
+{% endfor %}
+
+{% endblock %}

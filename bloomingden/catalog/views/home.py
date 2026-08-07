@@ -8,18 +8,23 @@ from django.contrib.auth.decorators import login_required
 from django.db.models import Q
 from django.urls import reverse
 from decimal import Decimal, InvalidOperation
-from .forms import SignUpForm, PlantListingForm
-from .models import Flower, Bouquet, Order, Category, Plant, Profile, PlantListing, Conversation, Message
-from .cart import Cart
+from ..forms import SignUpForm, PlantListingForm
+from ..models import Product, Order, Category, Profile, PlantListing, Conversation, Message
+from ..cart import Cart
 
 import json
 import base64
-from .esewa import build_payment_data, verify_response_signature, ESEWA_FORM_URL
-from .khalti import initiate_payment, verify_payment
+from ..esewa import build_payment_data, verify_response_signature, ESEWA_FORM_URL
+from ..khalti import initiate_payment, verify_payment
 
 # Create your views here.
+
 def home(request):
-    return render(request, "home.html")
+    products = Product.objects.filter(status="active")[:8]
+
+    return render(request, "catalog/home.html", {
+        "products": products,
+    })
 
 def signup(request):
     if request.method == 'POST':
@@ -38,25 +43,25 @@ def signup(request):
         form = SignUpForm()
     return render(request, "catalog/signup.html", {"form": form})
 
-def catalog_list(request):
-    ''' get all catalog from the database and send them to 
-    a template called catalog.html'''
-    catalog = Flower.objects.all()
-    return render(request, "catalog/catalog.html", {"catalog": catalog})
+# def catalog_list(request):
+#     ''' get all catalog from the database and send them to 
+#     a template called catalog.html'''
+#     catalog = Flower.objects.all()
+#     return render(request, "catalog/catalog.html", {"catalog": catalog})
 
-def flower_detail(request, id):
-    flower = get_object_or_404(Flower, id=id)
-    return render(request, "catalog/flower_detail.html", {"flower": flower})
+# def flower_detail(request, id):
+#     flower = get_object_or_404(Flower, id=id)
+#     return render(request, "catalog/flower_detail.html", {"flower": flower})
 
-def bouquet_list(request):
-    ''' fetches all bouquets from the database and sends them to catalog/bouquet_list.html template'''
-    bouquets = Bouquet.objects.all()
-    return render(request, "catalog/bouquet_list.html", {"bouquets": bouquets})
+# def bouquet_list(request):
+#     ''' fetches all bouquets from the database and sends them to catalog/bouquet_list.html template'''
+#     bouquets = Bouquet.objects.all()
+#     return render(request, "catalog/bouquet_list.html", {"bouquets": bouquets})
 
-def bouquet_detail(request, pk):
-    ''' Finds the bouquet using its ID and sends it to catalog/bouquet_detail.html'''
-    bouquet = get_object_or_404(Bouquet, pk=pk)
-    return render(request, "catalog/bouquet_detail.html", {"bouquet": bouquet})
+# def bouquet_detail(request, pk):
+#     ''' Finds the bouquet using its ID and sends it to catalog/bouquet_detail.html'''
+#     bouquet = get_object_or_404(Bouquet, pk=pk)
+#     return render(request, "catalog/bouquet_detail.html", {"bouquet": bouquet})
 
 
 @require_POST  # reject anything that isn't POST
@@ -332,7 +337,7 @@ def listing_create(request):
         form = PlantListingForm(request.POST, request.FILES)
         if form.is_valid():
             listing = form.save(commit=False)
-            listing.seller = request.user
+            listing.seller = request.user.vendor
             listing.save()
             messages.success(request, "Your plant is now listed!")
             return redirect('listing_detail', pk=listing.pk)
@@ -343,14 +348,14 @@ def listing_create(request):
 
 @login_required
 def my_listings(request):
-    listings = PlantListing.objects.filter(seller=request.user).order_by('-created_at')
+    listings = PlantListing.objects.filter(seller=request.user.vendor).order_by('-created_at')
     return render(request, "catalog/my_listings.html", {"listings": listings})
 
 
 @require_POST
 @login_required
 def mark_sold(request, pk):
-    listing = get_object_or_404(PlantListing, pk=pk, seller=request.user)
+    listing = get_object_or_404(PlantListing, pk=pk, seller=request.user.vendor)
     listing.status = 'sold'
     listing.save()
     messages.success(request, f"{listing.name} marked as sold.")
@@ -360,13 +365,13 @@ def mark_sold(request, pk):
 @login_required
 def start_conversation(request, pk):
     listing = get_object_or_404(PlantListing, pk=pk)
-    if listing.seller == request.user:
+    if listing.seller == request.user.vendor:
         messages.error(request, "You can't message yourself about your own listing.")
         return redirect('listing_detail', pk=pk)
 
     conversation, created = Conversation.objects.get_or_create(
         listing=listing, buyer=request.user,
-        defaults={'seller': listing.seller}
+        seller= listing.seller.user,
     )
     return redirect('conversation_detail', pk=conversation.pk)
 
@@ -394,23 +399,30 @@ def conversation_detail(request, pk):
     conversation.messages.exclude(sender=request.user).update(is_read=True)
     return render(request, "catalog/conversation_detail.html", {"conversation": conversation})
 
+
 def search(request):
-    query = request.GET.get('q', '').strip()
-    catalog = bouquets = plants = listings = []
+    query = request.GET.get("q", "").strip()
+    products = []
+    listings = []
 
     if query:
-        catalog = Flower.objects.filter(Q(name__icontains=query) | Q(description__icontains=query))
-        bouquets = Bouquet.objects.filter(Q(name__icontains=query) | Q(description__icontains=query))
-        plants = Plant.objects.filter(Q(name__icontains=query) | Q(description__icontains=query))
+        products = Product.objects.filter(
+            Q(name__icontains=query) |
+            Q(description__icontains=query),
+            status="active",
+        )
         listings = PlantListing.objects.filter(
-            Q(name__icontains=query) | Q(description__icontains=query),
-            status='available'
+            Q(name__icontains=query) |
+            Q(description__icontains=query),
+            status="available",
         )
 
-    return render(request, "catalog/search_results.html", {
-        "query": query,
-        "catalog": catalog,
-        "bouquets": bouquets,
-        "plants": plants,
-        "listings": listings,
-    })
+    return render(
+        request,
+        "catalog/search_results.html",
+        {
+            "query": query,
+            "products": products,
+            "listings": listings,
+        },
+    )

@@ -1,0 +1,109 @@
+{% extends "base.html" %}
+
+{% block content %}
+
+<h1>Seller Dashboard</h1>
+
+<p>Manage your products and inventory.</p>
+
+<p>
+    <a href="{% url 'add_product' %}">
+        + Add Product
+    </a>
+</p>
+
+<hr>
+
+<div style="display:flex; gap:20px; margin:20px 0;">
+
+    <div>
+        <h3>{{ total_products }}</h3>
+        <p>Total Products</p>
+    </div>
+
+    <div>
+        <h3>{{ active_products }}</h3>
+        <p>Active</p>
+    </div>
+
+    <div>
+        <h3>{{ draft_products }}</h3>
+        <p>Draft</p>
+    </div>
+
+    <div>
+        <h3>{{ out_of_stock }}</h3>
+        <p>Out of Stock</p>
+    </div>
+
+</div>
+
+<table border="1" cellpadding="10" cellspacing="0" width="100%">
+
+    <tr>
+        <th>Image</th>
+        <th>Name</th>
+        <th>Category</th>
+        <th>Price</th>
+        <th>Stock</th>
+        <th>Status</th>
+        <th>Actions</th>
+    </tr>
+
+    {% for product in products %}
+
+    <tr>
+
+        <td>
+
+            {% with image=product.primary_image %}
+                {% if image %}
+                    <img src="{{ image.image.url }}" width="70">
+                {% else %}
+                    No Image
+                {% endif %}
+            {% endwith %}
+
+        </td>
+
+        <td>{{ product.name }}</td>
+
+        <td>{{ product.category.name }}</td>
+
+        <td>Rs. {{ product.price }}</td>
+
+        <td>{{ product.stock }}</td>
+
+        <td>{{ product.get_status_display }}</td>
+
+        <td>
+
+            <a href="{% url 'edit_product' product.pk %}">
+                Edit
+            </a>
+
+            |
+
+            <a href="{% url 'delete_product' product.pk %}">
+                Delete
+            </a>
+
+        </td>
+
+    </tr>
+
+    {% empty %}
+
+    <tr>
+
+        <td colspan="7" align="center">
+            No products yet.
+        </td>
+
+    </tr>
+
+    {% endfor %}
+
+</table>
+
+{% endblock %}

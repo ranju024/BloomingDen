@@ -16,7 +16,11 @@ class CategoryAdmin(admin.ModelAdmin):
     )
     search_fields = (
         "name",
-        "description",
+    )
+    list_editable = (
+        "sort_order",
+        "is_featured",
+        "is_active",
     )
     prepopulated_fields = {
         "slug": ("name",)

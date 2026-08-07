@@ -1,73 +1,78 @@
 {% extends "base.html" %}
 {% load static %}
+
 {% block content %}
+
 <div class="page-section">
-  <h1>Search results for "{{ query }}"</h1>
+    <h1>Search results for "{{ query }}"</h1>
 </div>
 
-{% if not catalog and not bouquets and not plants and not listings %}
+{% if not products and not listings %}
 <div class="empty-state">
-  <p>No results found. Try a different search.</p>
+    <p>No results found. Try a different search.</p>
 </div>
 {% endif %}
 
-{% if bouquets %}
-<h2>Bouquets</h2>
-<div class="product-grid">
-  {% for item in bouquets %}
-  <div class="product-card">
-    <a href="{% url 'bouquet_detail' item.pk %}">
-      {% if item.image %}<img src="{{ item.image.url }}" alt="{{ item.name }}">{% else %}<img src="{% static 'images/no-image.jpg' %}" alt="No image">{% endif %}
-      <h3>{{ item.name }}</h3>
-    </a>
-    <p class="price">Rs. {{ item.price }}</p>
-  </div>
-  {% endfor %}
-</div>
-{% endif %}
+{% if products %}
+<h2>Products</h2>
 
-{% if catalog %}
-<h2>catalog</h2>
 <div class="product-grid">
-  {% for item in catalog %}
-  <div class="product-card">
-    <a href="/catalog/{{ item.id }}">
-      {% if item.image %}<img src="{{ item.image.url }}" alt="{{ item.name }}">{% else %}<img src="{% static 'images/no-image.jpg' %}" alt="No image">{% endif %}
-      <h3>{{ item.name }}</h3>
-    </a>
-    <p class="price">Rs. {{ item.price }}</p>
-  </div>
-  {% endfor %}
-</div>
-{% endif %}
 
-{% if plants %}
-<h2>Plants</h2>
-<div class="product-grid">
-  {% for item in plants %}
-  <div class="product-card">
-    <a href="{% url 'plant_detail' item.pk %}">
-      {% if item.image %}<img src="{{ item.image.url }}" alt="{{ item.name }}">{% else %}<img src="{% static 'images/no-image.jpg' %}" alt="No image">{% endif %}
-      <h3>{{ item.name }}</h3>
-    </a>
-    <p class="price">Rs. {{ item.price }}</p>
-  </div>
-  {% endfor %}
+    {% for item in products %}
+
+    <div class="product-card">
+
+        <a href="{% url 'product_detail' item.slug %}">
+
+            {% with image=item.primary_image %}
+                {% if image %}
+                    <img src="{{ image.image.url }}" alt="{{ item.name }}">
+                {% else %}
+                    <img src="{% static 'images/no-image.jpg' %}" alt="No image">
+                {% endif %}
+            {% endwith %}
+
+            <h3>{{ item.name }}</h3>
+
+        </a>
+
+        <p class="price">Rs. {{ item.price }}</p>
+
+    </div>
+
+    {% endfor %}
+
 </div>
 {% endif %}
 
 {% if listings %}
-<h2>Marketplace listings</h2>
+<h2>Marketplace Listings</h2>
+
 <div class="product-grid">
-  {% for item in listings %}
-  <div class="product-card">
-    <a href="{% url 'listing_detail' item.pk %}">
-      {% if item.image %}<img src="{{ item.image.url }}" alt="{{ item.name }}">{% else %}<img src="{% static 'images/no-image.jpg' %}" alt="No image">{% endif %}
-      <h3>{{ item.name }}</h3>
-    </a>
-    <p class="price">Rs. {{ item.price }}</p>
-  </div>
-  {% endfor %}
+
+    {% for item in listings %}
+
+    <div class="product-card">
+
+        <a href="{% url 'listing_detail' item.pk %}">
+
+            {% if item.image %}
+                <img src="{{ item.image.url }}" alt="{{ item.name }}">
+            {% else %}
+                <img src="{% static 'images/no-image.jpg' %}" alt="No image">
+            {% endif %}
+
+            <h3>{{ item.name }}</h3>
+
+        </a>
+
+        <p class="price">Rs. {{ item.price }}</p>
+
+    </div>
+
+    {% endfor %}
+
 </div>
 {% endif %}
+
 {% endblock %}
