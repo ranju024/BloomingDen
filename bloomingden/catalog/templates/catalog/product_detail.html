@@ -20,23 +20,26 @@
         {{ product.description }}
     </p>
 
-    {% if product.stock > 0 %}
+    {% if product.stock > 0 and product.status == "active" %}
         <p>
             <strong>In stock:</strong> {{ product.stock }}
         </p>
+        {% if user.is_authenticated and user.profile.role == "buyer" %}
+            <form action="{% url 'add_to_cart' product.pk %}" method="post">
+                {% csrf_token %}
 
-        <form action="{% url 'add_to_cart' product.pk %}" method="post">
-            {% csrf_token %}
+                <button type="submit" class="btn">
+                    Add to Cart
+                </button> 
+            </form>
+        {% endif %}
 
-            <button type="submit" class="btn">
-                Add to Cart
-            </button> 
-        </form>
-
-    {% else %}
+    {% elif product.status == "out_of_stock" or product.stock == 0 %}
         <p>
             <strong>Out of stock</strong>
         </p>
+    {% else %}
+        <p>This product is currently unavailable.</p>
     {% endif %}
 
 </div>

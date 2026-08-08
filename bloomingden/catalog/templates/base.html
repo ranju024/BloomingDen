@@ -17,21 +17,30 @@
           <input type="text" name="q" placeholder="Search plants, catalog..." value="{{ request.GET.q }}">
         </form>
         <div class="nav-links">
-          <a href="{% url 'product_list' %}">Shop</a>
-          <a href="{% url 'listing_list' %}">Marketplace</a>
-          <a href="{% url 'cart_detail' %}">Cart ({{ cart_item_count }})</a>
           {% if user.is_authenticated %}
-            {% if user.profile.role == "seller" %}
-              <a href="{% url 'seller_dashboard' %}">Dashboard</a>
-              <a href="{% url 'my_listings' %}">My listings</a>
+            {% if user.profile.role == "buyer" %}
+                <a href="{% url 'product_list' %}">Shop</a>
+                <a href="{% url 'listing_list' %}">Marketplace</a>
+                <a href="{% url 'cart_detail' %}">
+                    Cart ({{ cart_item_count }})
+                </a>
+                <a href="{% url 'conversation_list' %}">Inbox</a>
+
+            {% elif user.profile.role == "seller" %}
+                <a href="{% url 'listing_list' %}">Marketplace</a>
+                <a href="{% url 'seller_dashboard' %}">Dashboard</a>
+                <a href="{% url 'my_listings' %}">My listings</a>
+                <a href="{% url 'conversation_list' %}">Inbox</a>
+
             {% endif %}
-            <a href="{% url 'conversation_list' %}">Inbox</a>
-            <span>Hi, {{ user.username }}</span>
-            <form action="{% url 'logout' %}" method="post" style="display:inline">
-              {% csrf_token %}
-              <button type="submit" class="link-button">Logout</button>
-            </form>
+              <span>Hi, {{ user.username }}</span>
+              <form action="{% url 'logout' %}" method="post" style="display:inline">
+                  {% csrf_token %}
+                  <button type="submit" class="link-button">Logout</button>
+              </form>
           {% else %}
+            <a href="{% url 'product_list' %}">Shop</a>
+            <a href="{% url 'listing_list' %}">Marketplace</a>
             <a href="{% url 'login' %}">Login</a>
             <a href="{% url 'signup' %}">Sign up</a>
           {% endif %}

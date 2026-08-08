@@ -57,12 +57,16 @@ def signup(request):
 
 
 @require_POST  # reject anything that isn't POST
+@login_required
 def add_to_cart(request, pk):
     product = get_object_or_404(
         Product,
         pk=pk,
         status="active",
     )
+    if request.user.profile.role != "buyer":
+        messages.error(request, "Only buyers can add products to the cart.")
+        return redirect("product_detail", slug=product.slug)
 
     if product.stock <= 0:
         messages.error(request, "This product is currently out of stock.")
@@ -87,8 +91,13 @@ def get_cart_data(request):
         total_price += Decimal(item['price']) * item['quantity']
     return items, total_price
 
+@login_required
 def cart_detail(request):
     ''' Display the contents of the shopping cart and calculate total price '''
+    if request.user.profile.role != "buyer":
+        messages.error(request, "Only buyers can access the cart.")
+        return redirect("seller_dashboard")
+    
     cart = Cart(request)  # create cart object from session
 
     items = list(cart.get_items())
@@ -124,8 +133,13 @@ def remove_from_cart(request, key):
     cart.remove(key)
     return redirect('cart_detail')
 
+@login_required
 def checkout(request):
     ''' Handles checkout form submission and saves the order'''
+    if request.user.profile.role != "buyer":
+        messages.error(request, "Only buyers can checkout.")
+        return redirect("seller_dashboard")
+    
     items, total_price = get_cart_data(request)
     if not items:
         return redirect('home') # if nth to check out
