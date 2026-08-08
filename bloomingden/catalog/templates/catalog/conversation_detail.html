@@ -1,7 +1,7 @@
 {% extends "base.html" %}
 {% block content %}
 <div class="page-section">
-  <h1>{{ conversation.listing.name }}</h1>
+  <h1>Conversation about {{ conversation.listing.name }}</h1>
   <a href="{% url 'conversation_list' %}" class="back-link tight">← Back to inbox</a>
 </div>
 

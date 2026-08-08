@@ -3,7 +3,7 @@
 {% block content %}
 <div class="page-section" style="display:flex; justify-content:space-between; align-items:center;">
   <h1>Plant marketplace</h1>
-  {% if user.is_authenticated %}
+  {% if user.is_authenticated and user.profile.role == "seller" %}
     <a href="{% url 'listing_create' %}" class="btn">Sell a plant</a>
   {% endif %}
 </div>

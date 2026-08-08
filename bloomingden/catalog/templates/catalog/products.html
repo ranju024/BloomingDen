@@ -54,11 +54,11 @@
 
 <div style="margin-bottom:20px;">
 
-    {% with image=product.primary_image %}
+    {% with image=product.images.first %}
         {% if image %}
             <img
                 src="{{ image.image.url }}"
-                alt="{{ product.name }}"
+                alt="{{ image.alt_text|default:product.name }}"
                 width="180"
             >
         {% endif %}

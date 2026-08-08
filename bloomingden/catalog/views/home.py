@@ -8,8 +8,10 @@ from django.contrib.auth.decorators import login_required
 from django.db.models import Q
 from django.urls import reverse
 from decimal import Decimal, InvalidOperation
+
+from ..decorators import seller_required
 from ..forms import SignUpForm, PlantListingForm
-from ..models import Product, Order, Category, Profile, PlantListing, Conversation, Message
+from ..models import Product, Order, Category, Profile, PlantListing, Conversation, Message, Vendor
 from ..cart import Cart
 
 import json
@@ -331,7 +333,7 @@ def listing_detail(request, pk):
     return render(request, "catalog/listing_detail.html", {"listing": listing})
 
 
-@login_required
+@seller_required
 def listing_create(request):
     if request.method == 'POST':
         form = PlantListingForm(request.POST, request.FILES)
@@ -346,16 +348,18 @@ def listing_create(request):
     return render(request, "catalog/listing_form.html", {"form": form})
 
 
-@login_required
+@seller_required
 def my_listings(request):
-    listings = PlantListing.objects.filter(seller=request.user.vendor).order_by('-created_at')
+    vendor = request.user.vendor
+    listings = PlantListing.objects.filter(seller=vendor).order_by('-created_at')
     return render(request, "catalog/my_listings.html", {"listings": listings})
 
 
 @require_POST
-@login_required
+@seller_required
 def mark_sold(request, pk):
-    listing = get_object_or_404(PlantListing, pk=pk, seller=request.user.vendor)
+    vendor = request.user.vendor
+    listing = get_object_or_404(PlantListing, pk=pk, seller=vendor)
     listing.status = 'sold'
     listing.save()
     messages.success(request, f"{listing.name} marked as sold.")
@@ -364,31 +368,97 @@ def mark_sold(request, pk):
 
 @login_required
 def start_conversation(request, pk):
-    listing = get_object_or_404(PlantListing, pk=pk)
-    if listing.seller == request.user.vendor:
-        messages.error(request, "You can't message yourself about your own listing.")
-        return redirect('listing_detail', pk=pk)
+
+    # Only buyers can start a conversation
+    if not hasattr(request.user, "profile") or request.user.profile.role != "buyer":
+        messages.error(
+            request,
+            "Only buyers can message sellers."
+        )
+        return redirect("listing_detail", pk=pk)
+
+    listing = get_object_or_404(
+        PlantListing,
+        pk=pk,
+        status="available"
+    )
+
+    # Buyer cannot message themselves
+    if hasattr(request.user, "vendor"):
+        if listing.seller == request.user.vendor:
+            messages.error(
+                request,
+                "You can't message yourself about your own listing."
+            )
+            return redirect("listing_detail", pk=pk)
 
     conversation, created = Conversation.objects.get_or_create(
-        listing=listing, buyer=request.user,
-        seller= listing.seller.user,
+        listing=listing,
+        buyer=request.user,
+        defaults={
+            "seller": listing.seller,
+        }
     )
-    return redirect('conversation_detail', pk=conversation.pk)
+
+    return redirect(
+        "conversation_detail",
+        pk=conversation.pk
+    )
 
 
 @login_required
 def conversation_list(request):
-    conversations = Conversation.objects.filter(
-        Q(buyer=request.user) | Q(seller=request.user)
-    ).order_by('-created_at')
-    return render(request, "catalog/conversation_list.html", {"conversations": conversations})
 
+    if not hasattr(request.user, "profile"):
+        return redirect("home")
+
+    if request.user.profile.role == "buyer":
+
+        conversations = Conversation.objects.filter(
+            buyer=request.user
+        ).order_by("-created_at")
+
+    elif request.user.profile.role == "seller":
+
+        vendor = Vendor.objects.filter(
+            user=request.user
+        ).first()
+
+        if not vendor:
+            messages.error(
+                request,
+                "Your seller account is not set up yet."
+            )
+            return redirect("home")
+
+        conversations = Conversation.objects.filter(
+            seller=vendor
+        ).order_by("-created_at")
+
+    else:
+        conversations = Conversation.objects.none()
+
+    return render(
+        request,
+        "catalog/conversation_list.html",
+        {
+            "conversations": conversations,
+        }
+    )
 
 @login_required
 def conversation_detail(request, pk):
     conversation = get_object_or_404(Conversation, pk=pk)
-    if request.user != conversation.buyer and request.user != conversation.seller:
+
+    is_buyer = conversation.buyer == request.user # buyer owns the conversation directly
+    is_seller = (
+        hasattr(request.user, 'vendor')
+        and conversation.seller == request.user.vendor
+    )
+
+    if not is_buyer and not is_seller:
         return HttpResponse(status=403)
+    
 
     if request.method == 'POST':
         body = request.POST.get('body', '').strip()
@@ -396,6 +466,7 @@ def conversation_detail(request, pk):
             Message.objects.create(conversation=conversation, sender=request.user, body=body)
         return redirect('conversation_detail', pk=pk)
 
+    # mark messages from the other person as read
     conversation.messages.exclude(sender=request.user).update(is_read=True)
     return render(request, "catalog/conversation_detail.html", {"conversation": conversation})
 

@@ -5,11 +5,9 @@ from ..forms import ProductForm
 from ..decorators import seller_required
 from ..models import Product
 
-@login_required
+
+@seller_required
 def seller_dashboard(request):
-    # products = Product.objects.filter(
-    #     seller=request.user
-    # ).order_by("-created_at")
     products = request.user.vendor.products.all()
     context = {
         "products": products,

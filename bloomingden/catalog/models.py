@@ -327,7 +327,7 @@ class Conversation(models.Model):
         unique_together = ('listing', 'buyer')
 
     def __str__(self):
-        return f"{self.buyer.username} ↔ {self.seller.username} about {self.listing.name}"
+        return f"{self.buyer.username} ↔ {self.seller.user.username} about {self.listing.name}"
 
 
 class Message(models.Model):

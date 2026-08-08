@@ -1,32 +1,86 @@
 {% extends "base.html" %}
 {% load static %}
+
 {% block content %}
-<div class="detail-layout">
-  <div>
-    {% if listing.image %}
-      <img src="{{ listing.image.url }}" alt="{{ listing.name }}">
-    {% else %}
-      <img src="{% static 'images/no-image.jpg' %}" alt="No image available">
-    {% endif %}
-  </div>
-  <div>
-    <h1>{{ listing.name }}</h1>
-    <div class="tag-list">
-      <span>{{ listing.get_condition_display }}</span>
-      {% if listing.location %}<span>{{ listing.location }}</span>{% endif %}
-      <span>{{ listing.get_status_display }}</span>
+
+<div class="page-section">
+
+```
+<a href="{% url 'listing_list' %}" class="back-link">
+    ← Back to marketplace
+</a>
+
+<div class="product-detail">
+
+    <div class="product-detail-image">
+        {% if listing.image %}
+            <img src="{{ listing.image.url }}" alt="{{ listing.name }}">
+        {% else %}
+            <img src="{% static 'images/no-image.jpg' %}" alt="No image available">
+        {% endif %}
     </div>
-    <p>{{ listing.description }}</p>
-    <h3>Rs. {{ listing.price }}</h3>
-    <p style="font-size:13px; color:var(--text-body);">Listed by {{ listing.seller.username }}</p>
 
-    {% if user.is_authenticated and user != listing.seller and listing.status == 'available' %}
-      <a href="{% url 'start_conversation' listing.pk %}" class="btn">Message seller</a>
-    {% elif not user.is_authenticated %}
-      <a href="{% url 'login' %}" class="btn">Log in to message seller</a>
-    {% endif %}
+    <div class="product-detail-info">
 
-    <a href="{% url 'listing_list' %}" class="back-link">← Back to marketplace</a>
-  </div>
+        <h1>{{ listing.name }}</h1>
+
+        <p class="price">Rs. {{ listing.price }}</p>
+
+        <p>
+            <strong>Condition:</strong>
+            {{ listing.get_condition_display }}
+        </p>
+
+        <p>
+            <strong>Status:</strong>
+            {{ listing.get_status_display }}
+        </p>
+
+        <p>
+            <strong>Seller:</strong>
+            {{ listing.seller.user.username }}
+        </p>
+
+        <p>
+            {{ listing.description }}
+        </p>
+
+        {% if user.is_authenticated %}
+
+            {% if user.vendor == listing.seller %}
+
+                {% if listing.status == 'available' %}
+                    <form action="{% url 'mark_sold' listing.pk %}" method="post">
+                        {% csrf_token %}
+                        <button type="submit" class="btn">
+                            Mark as sold
+                        </button>
+                    </form>
+                {% endif %}
+
+            {% elif listing.status == 'available' %}
+
+                <a href="{% url 'start_conversation' listing.pk %}" class="btn">
+                    Message seller
+                </a>
+
+            {% endif %}
+
+        {% else %}
+
+            {% if listing.status == 'available' %}
+                <a href="{% url 'login' %}" class="btn">
+                    Log in to message seller
+                </a>
+            {% endif %}
+
+        {% endif %}
+
+    </div>
+
 </div>
+```
+
+</div>
+
 {% endblock %}

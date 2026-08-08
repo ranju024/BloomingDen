@@ -2,11 +2,19 @@
 
 {% block content %}
 
-{% with image=product.primary_image %}
-    {% if image %}
-        <img src="{{ image.image.url }}" alt="{{ product.name }}" width="350">
-    {% endif %}
-{% endwith %}
+{% if product.images.all %}
+    <div class="product-images">
+        {% for image in product.images.all %}
+            <img
+                src="{{ image.image.url }}"
+                alt="{{ image.alt_text|default:product.name }}"
+                width="350"
+            >
+        {% endfor %}
+    </div>
+{% else %}
+    <p>No image available.</p>
+{% endif %}
 
 <h2>{{ product.name }}</h2>
 

@@ -1,11 +1,80 @@
 {% extends "base.html" %}
+{% load static %}
+
 {% block content %}
+
 <div class="page-section">
-  <h1>List a plant for sale</h1>
+    <h1>My Listings</h1>
+
+```
+<a href="{% url 'listing_create' %}" class="btn">
+    Sell a plant
+</a>
+```
+
 </div>
-<form method="post" enctype="multipart/form-data" style="max-width: 480px;">
-    {% csrf_token %}
-    {{ form.as_p }}
-    <button type="submit" class="btn">Publish listing</button>
-</form>
+
+<div class="product-grid">
+
+```
+{% for listing in listings %}
+
+<div class="product-card">
+
+    <a href="{% url 'listing_detail' listing.pk %}">
+
+        {% if listing.image %}
+            <img src="{{ listing.image.url }}" alt="{{ listing.name }}">
+        {% else %}
+            <img src="{% static 'images/no-image.jpg' %}" alt="No image available">
+        {% endif %}
+
+        <h3>{{ listing.name }}</h3>
+
+    </a>
+
+    <p class="price">
+        Rs. {{ listing.price }}
+    </p>
+
+    <p>
+        Status: {{ listing.get_status_display }}
+    </p>
+
+    <p>
+        Condition: {{ listing.get_condition_display }}
+    </p>
+
+    {% if listing.status == 'available' %}
+
+        <form action="{% url 'mark_sold' listing.pk %}" method="post">
+            {% csrf_token %}
+            <button type="submit" class="btn">
+                Mark as sold
+            </button>
+        </form>
+
+    {% else %}
+
+        <p>✓ Sold</p>
+
+    {% endif %}
+
+</div>
+
+{% empty %}
+
+<div class="empty-state">
+    <p>You haven't listed any plants yet.</p>
+
+    <a href="{% url 'listing_create' %}" class="btn">
+        Sell your first plant
+    </a>
+</div>
+
+{% endfor %}
+```
+
+</div>
+
 {% endblock %}
