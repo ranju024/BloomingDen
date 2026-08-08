@@ -8,7 +8,7 @@
   <table>
     <thead>
       <tr>
-        <th>Bouquet</th>
+        <th>Product</th>
         <th>Price</th>
         <th>Quantity</th>
         <th>Subtotal</th>
@@ -18,8 +18,6 @@
     <tbody>
       {% for item in items %}
       <tr>
-        <td>{{ item.name }}</td>
-        <td>Rs. {{ item.price }}</td>
         <td>{{ item.name }}</td>
         <td>Rs. {{ item.price }}</td>
         <td>
@@ -59,38 +57,3 @@
 
 
 
-{% comment %}
-{% extends 'base.html' %} {% block content %} {% if items %}
-<h1>Your Shopping Cart</h1>
-<table border="1" cellpadding="10">
-  <thead>
-    <tr>
-      <th>Product</th>
-      <th>Price</th>
-      <th>Quantity</th>
-      <th>Subtotal</th>
-      <th>Action</th>
-    </tr>
-  </thead>
-  <tbody>
-    {% for item in items %}
-    <tr>
-      <td>{{item.quantity }}</td>
-      <td>Rs. {{ item.subtotal }}</td>
-      <td>
-        <form action="{% url 'remove_from_cart' item.id %}" method="post" style="display:inline">
-          {% csrf_token %}
-          <button type="submit" style="color: red">Remove</button>
-        </form>
-      </td>
-    </tr>
-    {% endfor %}
-  </tbody>
-</table>
-<br>
-<h3>Total Price: Rs. {{ total_price }}</h3>
-<a href="{% url 'checkout' %}"><button>Proceed to Checkout</button></a>
-{% else %}
-<p>Your Cart is Empty!</p>
-{% endif %} {% endblock %}
-{% endcomment %}

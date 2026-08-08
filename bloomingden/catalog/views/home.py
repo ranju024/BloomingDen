@@ -55,59 +55,33 @@ def signup(request):
         form = SignUpForm()
     return render(request, "catalog/signup.html", {"form": form})
 
-# def catalog_list(request):
-#     ''' get all catalog from the database and send them to 
-#     a template called catalog.html'''
-#     catalog = Flower.objects.all()
-#     return render(request, "catalog/catalog.html", {"catalog": catalog})
-
-# def flower_detail(request, id):
-#     flower = get_object_or_404(Flower, id=id)
-#     return render(request, "catalog/flower_detail.html", {"flower": flower})
-
-# def bouquet_list(request):
-#     ''' fetches all bouquets from the database and sends them to catalog/bouquet_list.html template'''
-#     bouquets = Bouquet.objects.all()
-#     return render(request, "catalog/bouquet_list.html", {"bouquets": bouquets})
-
-# def bouquet_detail(request, pk):
-#     ''' Finds the bouquet using its ID and sends it to catalog/bouquet_detail.html'''
-#     bouquet = get_object_or_404(Bouquet, pk=pk)
-#     return render(request, "catalog/bouquet_detail.html", {"bouquet": bouquet})
-
 
 @require_POST  # reject anything that isn't POST
-def add_to_cart(request, item_type, pk):
-    """
-    View that handles adding an item to the cart.
-    """ 
-    if item_type == 'bouquet':
-        item = get_object_or_404(Bouquet, pk=pk) # Get the bouquet from database    
-    elif item_type == 'flower':
-        item = get_object_or_404(Flower, pk=pk)
-    elif item_type == 'plant':
-        item = get_object_or_404(Plant, pk=pk)
-    else:
-        return HttpResponse(status=404)
-    
-    cart = Cart(request) # Create cart object
-    cart.add(item, item_type) # Add item to cart 
-    messages.success(request, f"{item.name} added to cart.")
+def add_to_cart(request, pk):
+    product = get_object_or_404(
+        Product,
+        pk=pk,
+        status="active",
+    )
 
-    if item_type == 'bouquet':   
-        return redirect('bouquet_detail', pk=pk) # Redirect back to the bouquet page
-    elif item_type == 'flower':
-        return redirect('flower_detail', id=pk)
-    return redirect('plant_detail', pk=pk)
+    if product.stock <= 0:
+        messages.error(request, "This product is currently out of stock.")
+        return redirect("product_detail", slug=product.slug)
+
+    cart = Cart(request)
+    cart.add(product)
+
+    messages.success(request, f"{product.name} added to cart.")
+    return redirect("product_detail", slug=product.slug)
 
 def get_cart_data(request):
     """
     Returns cart items and total price.
     This avoids repeating the same code in multiple views.
     """
-    cart = request.session.get('cart', {})
-    items = cart.values()
+    cart = Cart(request)
 
+    items = list(cart.get_items())
     total_price = Decimal('0.00')
     for item in items:
         total_price += Decimal(item['price']) * item['quantity']
@@ -115,10 +89,9 @@ def get_cart_data(request):
 
 def cart_detail(request):
     ''' Display the contents of the shopping cart and calculate total price '''
-    # cart = Cart(request)  # create cart object from session
-    cart = request.session.get('cart', {})
+    cart = Cart(request)  # create cart object from session
 
-    items = cart.values()
+    items = list(cart.get_items())
     total_price = Decimal('0.00')
 
     #calculate subtotal for each item
@@ -147,11 +120,8 @@ def decrease_cart_item(request, key):
 @require_POST
 def remove_from_cart(request, key):
     ''' Remove an item from the cart '''
-    cart = request.session.get('cart', {})
-    if key in cart:
-        del cart[key]
-    request.session['cart'] = cart
-    request.session.modified = True
+    cart = Cart(request)
+    cart.remove(key)
     return redirect('cart_detail')
 
 def checkout(request):
