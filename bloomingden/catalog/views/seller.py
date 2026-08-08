@@ -1,7 +1,7 @@
 from django.contrib.auth.decorators import login_required
 from django.shortcuts import render, redirect, get_object_or_404
 
-from ..forms import ProductForm
+from ..forms import ProductForm, ProductImageFormSet
 from ..decorators import seller_required
 from ..models import Product
 
@@ -23,32 +23,46 @@ def seller_dashboard(request):
         context,
     )
 
-@login_required
 @seller_required
 def add_product(request):
 
     if request.method == "POST":
-        form = ProductForm(request.POST, request.FILES)
+        form = ProductForm(request.POST)
 
         if form.is_valid():
             product = form.save(commit=False)
             product.seller = request.user.vendor
             product.save()
 
-            return redirect("seller_dashboard")
+            formset = ProductImageFormSet(
+                request.POST,
+                request.FILES,
+                instance=product,
+            )
 
+            if formset.is_valid():
+                formset.save()
+                return redirect("seller_dashboard")           
+
+            return redirect("seller_dashboard")
+        else:
+            image_formset = ProductImageFormSet(
+                request.POST,
+                request.FILES
+            )
     else:
         form = ProductForm()
+        formset = ProductImageFormSet()
 
     return render(
         request,
         "catalog/seller/add_product.html",
         {
             "form": form,
+            "formset": formset,
         },
     )
 
-@login_required
 @seller_required
 def edit_product(request, pk):
     product = get_object_or_404(
@@ -59,25 +73,32 @@ def edit_product(request, pk):
     if request.method == "POST":
         form = ProductForm(
             request.POST,
+            instance=product,
+        )
+        formset = ProductImageFormSet(
+            request.POST,
             request.FILES,
             instance=product,
         )
-        if form.is_valid():
+        if form.is_valid() and formset.is_valid():
             form.save()
+            formset.save()
             return redirect("seller_dashboard")
     else:
         form = ProductForm(instance=product)
+        formset = ProductImageFormSet(instance=product)
 
     return render(
         request,
         "catalog/seller/edit_product.html",
         {
             "form": form,
+            "formset": formset,
             "product": product,
         },
     )
 
-@login_required
+
 @seller_required
 def delete_product(request, pk):
     product = get_object_or_404(

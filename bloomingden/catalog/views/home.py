@@ -33,11 +33,21 @@ def signup(request):
         form = SignUpForm(request.POST)
         if form.is_valid():
             user = form.save()
+            role = form.cleaned_data['role']
+            phone=form.cleaned_data['phone']
+
             Profile.objects.create(
                 user=user,
-                role=form.cleaned_data['role'],
-                phone=form.cleaned_data['phone']
+                role=role,
+                phone=phone,
             )
+
+            if role == "seller":
+                Vendor.objects.create(
+                    user=user,
+                    shop_name=f"{user.username}'s Shop",
+                    phone=phone,
+                )
             auth_login(request, user)
             messages.success(request, "Welcome to BloomingDen!")
             return redirect('home')

@@ -5,17 +5,22 @@
 <h1>Add Product</h1>
 
 <form method="post" enctype="multipart/form-data">
-
     {% csrf_token %}
 
     {{ form.as_p }}
 
-    <button type="submit">
+    <h3>Product Images</h3>
 
-        Save
+    {{ formset.management_form }}
 
+    {% for image_form in formset %}
+        <div class="image-form">
+            {{ image_form.as_p }}
+        </div>
+    {% endfor %}
+
+    <button type="submit" class="btn">
+        Add Product
     </button>
-
 </form>
-
 {% endblock %}

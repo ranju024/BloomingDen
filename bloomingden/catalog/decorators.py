@@ -1,7 +1,6 @@
 from functools import wraps
 from django.shortcuts import redirect
 from django.contrib import messages
-from .models import Vendor
 
 
 def seller_required(view_func):
@@ -17,9 +16,9 @@ def seller_required(view_func):
             return redirect("home")
 
         # Seller must have a Vendor account
-        vendor = Vendor.objects.filter(user=request.user).first()
+        vendor = getattr(request.user, "vendor", None)
 
-        if not vendor:
+        if vendor is None:
             messages.error(
                 request,
                 "Your seller account is not set up yet. Please contact the administrator."
