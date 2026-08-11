@@ -1,181 +1,74 @@
 {% extends "base.html" %}
 
 {% block content %}
-
 <div class="product-detail-page">
-
-    <a href="{% url 'product_list' %}" class="back-link">
-        ← Back to Shop
-    </a>
+    <a href="{% url 'product_list' %}" class="back-link">← Back to shop</a>
 
     <div class="product-detail">
-
-        <!-- Product Images -->
         <div class="product-gallery">
-
-            {% if product.images.all %}
-
-                {% for image in product.images.all %}
-                    <div class="detail-image">
-                        <img
-                            src="{{ image.image.url }}"
-                            alt="{{ image.alt_text|default:product.name }}"
-                        >
-                    </div>
-                {% empty %}
-                    <div class="product-no-image">
-                        No image available
-                    </div>
-                {% endfor %}
-
-            {% else %}
-
-                <div class="product-no-image">
-                    No image available
+            {% for image in product.images.all %}
+                <div class="detail-image">
+                    <img src="{{ image.image.url }}" alt="{{ image.alt_text|default:product.name }}">
                 </div>
-
-            {% endif %}
-
+            {% empty %}
+                <div class="product-no-image">No image available.</div>
+            {% endfor %}
         </div>
 
-
-        <!-- Product Information -->
         <div class="product-detail-info">
-
-            <p class="product-category">
-                {{ product.category }}
-            </p>
-
             <h1>{{ product.name }}</h1>
-
-            <p class="detail-price">
-                Rs. {{ product.price }}
-            </p>
+            <p class="product-category">{{ product.category }}</p>
+            <p class="detail-price">Rs. {{ product.price }}</p>
 
             <div class="product-description">
-                {{ product.description }}
+                <h3>Description</h3>
+                <p>{{ product.description }}</p>
             </div>
 
             <div class="product-meta">
-
-                <p>
-                    <strong>Condition:</strong>
-                    {{ product.get_condition_display }}
-                </p>
+                <p><strong>Condition:</strong> {{ product.get_condition_display }}</p>
 
                 {% if product.stock > 0 and product.status == "active" %}
-
-                    <p class="in-stock">
-                        <strong>In stock:</strong>
-                        {{ product.stock }}
-                    </p>
-
+                    <p class="in-stock"><strong>In stock:</strong> {{ product.stock }}</p>
                 {% elif product.status == "out_of_stock" or product.stock == 0 %}
-
-                    <p class="out-of-stock">
-                        <strong>Out of stock</strong>
-                    </p>
-
+                    <p class="out-of-stock"><strong>Out of stock</strong></p>
                 {% else %}
-
-                    <p>
-                        This product is currently unavailable.
-                    </p>
-
+                    <p class="out-of-stock">This product is currently unavailable.</p>
                 {% endif %}
-
             </div>
 
-
-            {% if product.stock > 0 and product.status == "active" %}
-
-                {% if user.is_authenticated and user.profile.role == "buyer" %}
-
-                    <form
-                        action="{% url 'add_to_cart' product.pk %}"
-                        method="post"
-                    >
-                        {% csrf_token %}
-
-                        <button type="submit" class="btn add-cart-btn">
-                            Add to Cart
-                        </button>
-                    </form>
-
-                {% endif %}
-
+            {% if user.is_authenticated and user.profile.role == "buyer" and product.stock > 0 and product.status == "active" %}
+                <form action="{% url 'add_to_cart' product.pk %}" method="post">
+                    {% csrf_token %}
+                    <button type="submit" class="add-cart-btn">Add to Cart</button>
+                </form>
             {% endif %}
-
         </div>
-
     </div>
 
-
-    <!-- Related Products -->
-
     {% if related_products %}
-
-        <section class="related-products">
-
+        <div class="related-products">
             <h2>Related Products</h2>
-
             <div class="product-grid">
-
                 {% for item in related_products %}
-
                     <div class="product-card">
-
-                        <a
-                            href="{% url 'product_detail' item.slug %}"
-                            class="product-image-link"
-                        >
-
-                            {% if item.primary_image %}
-
-                                <img
-                                    src="{{ item.primary_image.image.url }}"
-                                    alt="{{ item.name }}"
-                                    class="product-image"
-                                >
-
-                            {% else %}
-
-                                <div class="product-no-image">
-                                    No image
-                                </div>
-
-                            {% endif %}
-
-                        </a>
-
-                        <div class="product-card-content">
-
-                            <p class="product-category">
-                                {{ item.category }}
-                            </p>
-
-                            <h3>
-                                <a href="{% url 'product_detail' item.slug %}">
-                                    {{ item.name }}
+                        {% with image=item.images.first %}
+                            {% if image %}
+                                <a href="{% url 'product_detail' item.slug %}" class="product-image-link">
+                                    <img src="{{ image.image.url }}" alt="{{ image.alt_text|default:item.name }}" class="product-image">
                                 </a>
+                            {% endif %}
+                        {% endwith %}
+                        <div class="product-card-content">
+                            <h3>
+                                <a href="{% url 'product_detail' item.slug %}">{{ item.name }}</a>
                             </h3>
-
-                            <p class="product-price">
-                                Rs. {{ item.price }}
-                            </p>
-
+                            <p class="product-price">Rs. {{ item.price }}</p>
                         </div>
-
                     </div>
-
                 {% endfor %}
-
             </div>
-
-        </section>
-
+        </div>
     {% endif %}
-
 </div>
-
 {% endblock %}
