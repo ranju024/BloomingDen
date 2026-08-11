@@ -249,7 +249,6 @@ class Order(models.Model):
     PAYMENT_CHOICES = [
         ('cod', 'Cash on Delivery'),
         ('esewa', 'eSewa'),
-        ('khalti', 'Khalti'),
     ]
     PAYMENT_STATUS_CHOICES = [
         ("pending", "Pending"),

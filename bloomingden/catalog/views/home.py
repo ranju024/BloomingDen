@@ -18,7 +18,6 @@ from ..cart import Cart
 import json
 import base64
 from ..esewa import build_payment_data, verify_response_signature, ESEWA_FORM_URL
-from ..khalti import initiate_payment, verify_payment
 
 # Create your views here.
 
@@ -240,18 +239,13 @@ def checkout(request):
                     order_id=order.id,
                 )
             
-        # for esewa/khalti, we keep the cart until payment succeeds.
+        # for esewa, we keep the cart until payment succeeds.
         if payment_method == "esewa":
             return redirect(
                 "esewa_initiate",
                 order_id=order.id,
             )
-        elif payment_method == "khalti":
-            return redirect(
-                "khalti_initiate",
-                order_id=order.id,
-            )
-        
+
         #otherwise
         messages.error(request, "Invalid payment method.")
         order.delete() # order not successful so remove it
@@ -363,61 +357,6 @@ def esewa_success(request):
     request.session.modified = True
 
     return redirect('order_success', order_id=order.id)
-
-
-
-def khalti_initiate(request, order_id):
-    order = get_object_or_404(Order, id=order_id)
-    return_url = request.build_absolute_uri(reverse('khalti_verify'))
-    website_url = request.build_absolute_uri('/')
-
-    try:
-        data = initiate_payment(order, return_url, website_url)
-    except Exception:
-        messages.error(request, "Could not connect to Khalti. Please try again.")
-        return redirect('checkout')
-
-    order.transaction_uuid = data.get('pidx')
-    order.save()
-    return redirect(data.get('payment_url'))
-
-
-def khalti_verify(request):
-    pidx = request.GET.get('pidx')
-    if not pidx:
-        return redirect('payment_failure')
-
-    order = get_object_or_404(Order, transaction_uuid=pidx)
-
-    try:
-        result = verify_payment(pidx)
-    except Exception:
-        messages.error(request, "Could not verify payment with Khalti.")
-        return redirect('payment_failure')
-
-    if result.get('status') != 'Completed':
-        return redirect('payment_failure')
-
-    paid_amount = Decimal(result.get('total_amount', 0)) / 100
-    if paid_amount != order.total_price:
-        messages.error(request, "Payment amount mismatch. Please contact support.")
-        return redirect('payment_failure')
-
-    if not finalize_paid_order(order):
-        messages.error(
-            request,
-            "Payment was successful, but the product stock is no longer available. \n" \
-            "Please contact support.",
-        )
-        return redirect("payment_failure")
-
-    request.session["cart"] = {}
-    request.session.modified = True
-
-    return redirect(
-        "order_success",
-        order_id=order.id,
-    )
 
 
 def payment_failure(request):
