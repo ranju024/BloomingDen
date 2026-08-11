@@ -14,22 +14,24 @@
       <div class="container">
         <a href="/" class="nav-brand">BloomingDen</a>
         <form action="{% url 'product_list' %}" method="get" class="nav-search">
-          <input type="text" name="q" placeholder="Search plants, catalog..." value="{{ request.GET.q }}">
+          <input type="text" name="q" placeholder="Search plants.." value="{{ request.GET.q }}">
         </form>
         <div class="nav-links">
           {% if user.is_authenticated %}
             {% if user.profile.role == "buyer" %}
                 <a href="{% url 'product_list' %}">Shop</a>
                 <a href="{% url 'listing_list' %}">Marketplace</a>
-                <a href="{% url 'cart_detail' %}">
+                <a href="{% url 'cart_detail' %}" style="color: red;">
                     Cart ({{ cart_item_count }})
                 </a>
+                <a href="{% url 'my_orders' %}">My Orders</a> 
                 <a href="{% url 'conversation_list' %}">Inbox</a>
 
             {% elif user.profile.role == "seller" %}
                 <a href="{% url 'listing_list' %}">Marketplace</a>
                 <a href="{% url 'seller_dashboard' %}">Dashboard</a>
                 <a href="{% url 'my_listings' %}">My listings</a>
+                <a href="{% url 'seller_orders' %}">Orders</a>
                 <a href="{% url 'conversation_list' %}">Inbox</a>
 
             {% endif %}

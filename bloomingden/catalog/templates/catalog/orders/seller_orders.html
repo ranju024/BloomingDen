@@ -1,0 +1,55 @@
+{% extends "base.html" %}
+
+{% block content %}
+
+<div class="page-section">
+    <h1>Orders</h1>
+    <p>Orders containing your products.</p>
+</div>
+
+{% if orders %}
+
+<div class="order-list">
+
+    {% for order in orders %}
+
+    <div class="order-card">
+
+        <h3>Order #{{ order.id }}</h3>
+
+        <p>
+            Customer: {{ order.name }}
+        </p>
+
+        <p>
+            Date:
+            {{ order.created_at|date:"M d, Y" }}
+        </p>
+
+        <p>
+            Status:
+            <strong>{{ order.get_order_status_display }}</strong>
+        </p>
+
+        <a
+            href="{% url 'seller_order_detail' order.pk %}"
+            class="btn"
+        >
+            View Order
+        </a>
+
+    </div>
+
+    {% endfor %}
+
+</div>
+
+{% else %}
+
+<div class="empty-state">
+    <p>You haven't received any orders yet.</p>
+</div>
+
+{% endif %}
+
+{% endblock %}
