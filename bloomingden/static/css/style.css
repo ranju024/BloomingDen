@@ -668,3 +668,137 @@ input:focus, textarea:focus {
         width: 100%;
     }
 }
+
+/* =========================
+   Product Detail
+   ========================= */
+
+.product-detail-page {
+    max-width: 1200px;
+    margin: 0 auto;
+}
+
+.back-link {
+    display: inline-block;
+    margin-bottom: 25px;
+    text-decoration: none;
+}
+
+.product-detail {
+    display: grid;
+    grid-template-columns: 1.1fr 1fr;
+    gap: 50px;
+    align-items: start;
+}
+
+.product-gallery {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 15px;
+}
+
+.detail-image {
+    background: #f5f1e9;
+    border-radius: 12px;
+    overflow: hidden;
+}
+
+.detail-image:first-child {
+    grid-column: span 2;
+}
+
+.detail-image img {
+    display: block;
+    width: 100%;
+    height: 360px;
+    object-fit: cover;
+}
+
+.detail-image:not(:first-child) img {
+    height: 170px;
+}
+
+.product-detail-info {
+    padding-top: 5px;
+}
+
+.product-detail-info h1 {
+    margin: 5px 0 15px;
+    font-size: 38px;
+}
+
+.detail-price {
+    font-size: 24px;
+    font-weight: 600;
+    margin-bottom: 25px;
+}
+
+.product-description {
+    line-height: 1.7;
+    margin-bottom: 25px;
+}
+
+.product-meta {
+    border-top: 1px solid #ddd4c8;
+    border-bottom: 1px solid #ddd4c8;
+    padding: 15px 0;
+    margin-bottom: 25px;
+}
+
+.product-meta p {
+    margin: 8px 0;
+}
+
+.in-stock {
+    color: #4d6b4d;
+}
+
+.out-of-stock {
+    color: #8a5f4d;
+}
+
+.add-cart-btn {
+    width: 100%;
+    padding: 13px;
+}
+
+.related-products {
+    margin-top: 60px;
+}
+
+.related-products h2 {
+    margin-bottom: 25px;
+}
+
+
+/* Mobile */
+
+@media (max-width: 800px) {
+
+    .product-detail {
+        grid-template-columns: 1fr;
+        gap: 30px;
+    }
+
+    .product-detail-info h1 {
+        font-size: 30px;
+    }
+
+}
+
+@media (max-width: 500px) {
+
+    .product-gallery {
+        grid-template-columns: 1fr;
+    }
+
+    .detail-image:first-child {
+        grid-column: span 1;
+    }
+
+    .detail-image img,
+    .detail-image:not(:first-child) img {
+        height: 280px;
+    }
+
+}

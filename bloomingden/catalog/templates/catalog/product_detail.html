@@ -1,93 +1,181 @@
 {% extends "base.html" %}
 
 {% block content %}
-<a href="{% url 'product_list' %}" class="back-link">← Back to Shop</a>
 
-<div class="page-section">
+<div class="product-detail-page">
 
-    <h1>{{ product.name }}</h1>
+    <a href="{% url 'product_list' %}" class="back-link">
+        ← Back to Shop
+    </a>
 
-    <p>
-        <strong>Price:</strong>
-        Rs. {{ product.price }}
-    </p>
+    <div class="product-detail">
 
-    <p>
-        <strong>Condition:</strong>
-        {{ product.get_condition_display }}
-    </p>
+        <!-- Product Images -->
+        <div class="product-gallery">
 
-    <p>
-        {{ product.description }}
-    </p>
+            {% if product.images.all %}
 
-    {% if product.stock > 0 and product.status == "active" %}
-        <p>
-            <strong>In stock:</strong> {{ product.stock }}
-        </p>
-        {% if user.is_authenticated and user.profile.role == "buyer" %}
-            <form action="{% url 'add_to_cart' product.pk %}" method="post">
-                {% csrf_token %}
+                {% for image in product.images.all %}
+                    <div class="detail-image">
+                        <img
+                            src="{{ image.image.url }}"
+                            alt="{{ image.alt_text|default:product.name }}"
+                        >
+                    </div>
+                {% empty %}
+                    <div class="product-no-image">
+                        No image available
+                    </div>
+                {% endfor %}
 
-                <button type="submit" class="btn">
-                    Add to Cart
-                </button> 
-            </form>
-        {% endif %}
+            {% else %}
 
-    {% elif product.status == "out_of_stock" or product.stock == 0 %}
-        <p>
-            <strong>Out of stock</strong>
-        </p>
-    {% else %}
-        <p>This product is currently unavailable.</p>
-    {% endif %}
+                <div class="product-no-image">
+                    No image available
+                </div>
 
-</div>
+            {% endif %}
+
+        </div>
 
 
-{% if product.images.all %}
+        <!-- Product Information -->
+        <div class="product-detail-info">
 
-    <div class="product-images">
+            <p class="product-category">
+                {{ product.category }}
+            </p>
 
-        {% for image in product.images.all %}
+            <h1>{{ product.name }}</h1>
 
-            <div class="product-image">
-                <img
-                    src="{{ image.image.url }}"
-                    alt="{{ image.alt_text|default:product.name }}"
-                >
+            <p class="detail-price">
+                Rs. {{ product.price }}
+            </p>
+
+            <div class="product-description">
+                {{ product.description }}
             </div>
-        {% empty %}
-            <p>No image available.</p>
-        {% endfor %}
+
+            <div class="product-meta">
+
+                <p>
+                    <strong>Condition:</strong>
+                    {{ product.get_condition_display }}
+                </p>
+
+                {% if product.stock > 0 and product.status == "active" %}
+
+                    <p class="in-stock">
+                        <strong>In stock:</strong>
+                        {{ product.stock }}
+                    </p>
+
+                {% elif product.status == "out_of_stock" or product.stock == 0 %}
+
+                    <p class="out-of-stock">
+                        <strong>Out of stock</strong>
+                    </p>
+
+                {% else %}
+
+                    <p>
+                        This product is currently unavailable.
+                    </p>
+
+                {% endif %}
+
+            </div>
+
+
+            {% if product.stock > 0 and product.status == "active" %}
+
+                {% if user.is_authenticated and user.profile.role == "buyer" %}
+
+                    <form
+                        action="{% url 'add_to_cart' product.pk %}"
+                        method="post"
+                    >
+                        {% csrf_token %}
+
+                        <button type="submit" class="btn add-cart-btn">
+                            Add to Cart
+                        </button>
+                    </form>
+
+                {% endif %}
+
+            {% endif %}
+
+        </div>
 
     </div>
 
-{% else %}
 
-    <p>No image available.</p>
+    <!-- Related Products -->
 
-{% endif %}
+    {% if related_products %}
 
+        <section class="related-products">
 
-{% if related_products %}
+            <h2>Related Products</h2>
 
-    <h2>Related Products</h2>
+            <div class="product-grid">
 
-    {% for item in related_products %}
+                {% for item in related_products %}
 
-        <p>
-            {{ item.name }} -
-            Rs. {{ item.price }}
-        </p>
+                    <div class="product-card">
 
-    {% empty %}
+                        <a
+                            href="{% url 'product_detail' item.slug %}"
+                            class="product-image-link"
+                        >
 
-        <p>No related products.</p>
+                            {% if item.primary_image %}
 
-    {% endfor %}
+                                <img
+                                    src="{{ item.primary_image.image.url }}"
+                                    alt="{{ item.name }}"
+                                    class="product-image"
+                                >
 
-{% endif %}
+                            {% else %}
+
+                                <div class="product-no-image">
+                                    No image
+                                </div>
+
+                            {% endif %}
+
+                        </a>
+
+                        <div class="product-card-content">
+
+                            <p class="product-category">
+                                {{ item.category }}
+                            </p>
+
+                            <h3>
+                                <a href="{% url 'product_detail' item.slug %}">
+                                    {{ item.name }}
+                                </a>
+                            </h3>
+
+                            <p class="product-price">
+                                Rs. {{ item.price }}
+                            </p>
+
+                        </div>
+
+                    </div>
+
+                {% endfor %}
+
+            </div>
+
+        </section>
+
+    {% endif %}
+
+</div>
 
 {% endblock %}
