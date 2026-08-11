@@ -2,111 +2,171 @@
 
 {% block content %}
 
-<h1>Shop</h1>
+<div class="shop-page">
 
-<form method="get">
+    <h1>Shop</h1>
 
-    <input
-        type="text"
-        name="q"
-        placeholder="Search..."
-        value="{{ request.GET.q }}"
-    >
+    <form method="get" class="product-filter">
 
-    <select name="category">
-
-        <option value="">All Categories</option>
-
-        {% for category in categories %}
-
-        <option
-            value="{{ category.slug }}"
-            {% if request.GET.category == category.slug %}
-            selected
-            {% endif %}
+        <input
+            type="text"
+            name="q"
+            placeholder="Search plants..."
+            value="{{ request.GET.q }}"
         >
-            {{ category.name }}
-        </option>
 
-        {% endfor %}
+        <select name="category">
+            <option value="">All Categories</option>
 
-    </select>
+            {% for category in categories %}
+                <option
+                    value="{{ category.slug }}"
+                    {% if request.GET.category == category.slug %}selected{% endif %}
+                >
+                    {{ category.name }}
+                </option>
+            {% endfor %}
+        </select>
 
-    <select name="sort">
-
-        <option value="">Sort</option>
-
-        <option value="low">Price: Low → High</option>
-
-        <option value="high">Price: High → Low</option>
-
-    </select>
-
-    <button type="submit">
-        Filter
-    </button>
-
-</form>
-
-<hr>
-
-{% for product in products %}
-
-<div style="margin-bottom:20px;">
-
-    {% with image=product.images.first %}
-        {% if image %}
-            <img
-                src="{{ image.image.url }}"
-                alt="{{ image.alt_text|default:product.name }}"
-                width="180"
+        <select name="sort">
+            <option value="">Sort</option>
+            <option value="low"
+                {% if request.GET.sort == "low" %}selected{% endif %}
             >
+                Price: Low → High
+            </option>
+
+            <option value="high"
+                {% if request.GET.sort == "high" %}selected{% endif %}
+            >
+                Price: High → Low
+            </option>
+        </select>
+
+        <button type="submit" class="btn">
+            Filter
+        </button>
+
+    </form>
+
+
+    {% if products %}
+
+        <div class="product-grid">
+
+            {% for product in products %}
+
+                <div class="product-card">
+
+                    <a
+                        href="{% url 'product_detail' product.slug %}"
+                        class="product-image-link"
+                    >
+
+                        {% if product.primary_image %}
+
+                            <img
+                                src="{{ product.primary_image.image.url }}"
+                                alt="{{ product.primary_image.alt_text|default:product.name }}"
+                                class="product-image"
+                            >
+
+                        {% else %}
+
+                            <div class="product-no-image">
+                                No image
+                            </div>
+
+                        {% endif %}
+
+                    </a>
+
+
+                    <div class="product-card-content">
+
+                        <p class="product-category">
+                            {{ product.category }}
+                        </p>
+
+                        <h3>
+                            <a href="{% url 'product_detail' product.slug %}">
+                                {{ product.name }}
+                            </a>
+                        </h3>
+
+                        <p class="product-price">
+                            Rs. {{ product.price }}
+                        </p>
+
+
+                        {% if user.is_authenticated and user.profile.role == "buyer" %}
+
+                            {% if product.stock > 0 %}
+
+                                <form
+                                    action="{% url 'add_to_cart' product.id %}"
+                                    method="post"
+                                >
+                                    {% csrf_token %}
+
+                                    <button
+                                        type="submit"
+                                        class="btn add-cart-btn"
+                                    >
+                                        Add to Cart
+                                    </button>
+                                </form>
+
+                            {% else %}
+
+                                <p class="out-of-stock">
+                                    Out of stock
+                                </p>
+
+                            {% endif %}
+
+                        {% endif %}
+
+                    </div>
+
+                </div>
+
+            {% endfor %}
+
+        </div>
+
+
+        {% if products.has_previous or products.has_next %}
+
+            <div class="pagination">
+
+                {% if products.has_previous %}
+                    <a href="?q={{ request.GET.q }}&category={{ request.GET.category }}&sort={{ request.GET.sort }}&page={{ products.previous_page_number }}">
+                        ← Previous
+                    </a>
+                {% endif %}
+
+                <span>
+                    Page {{ products.number }}
+                </span>
+
+                {% if products.has_next %}
+                    <a href="?q={{ request.GET.q }}&category={{ request.GET.category }}&sort={{ request.GET.sort }}&page={{ products.next_page_number }}">
+                        Next →
+                    </a>
+                {% endif %}
+
+            </div>
+
         {% endif %}
-    {% endwith %}
 
-    <h3>
+    {% else %}
 
-        <a href="{% url 'product_detail' product.slug %}">
-            {{ product.name }}
-        </a>
+        <div class="empty-state">
+            <p>No products found.</p>
+        </div>
 
-    </h3>
-
-    <p>{{ product.category }}</p>
-
-    <p>Rs. {{ product.price }}</p>
-
-</div>
-
-{% empty %}
-
-<p>No products found.</p>
-
-{% endfor %}
-
-<div>
-
-{% if products.has_previous %}
-
-<a href="?page={{ products.previous_page_number }}">
-
-Previous
-
-</a>
-
-{% endif %}
-
-{{ products.number }}
-
-{% if products.has_next %}
-
-<a href="?page={{ products.next_page_number }}">
-
-Next
-
-</a>
-
-{% endif %}
+    {% endif %}
 
 </div>
 

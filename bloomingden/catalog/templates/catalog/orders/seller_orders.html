@@ -9,38 +9,58 @@
 
 {% if orders %}
 
-<div class="order-list">
+<div class="order-table-wrapper">
 
-    {% for order in orders %}
+    <table class="order-table">
 
-    <div class="order-card">
+        <thead>
+            <tr>
+                <th>Order</th>
+                <th>Customer</th>
+                <th>Date</th>
+                <th>Status</th>
+                <th>Action</th>
+            </tr>
+        </thead>
 
-        <h3>Order #{{ order.id }}</h3>
+        <tbody>
 
-        <p>
-            Customer: {{ order.name }}
-        </p>
+            {% for order in orders %}
 
-        <p>
-            Date:
-            {{ order.created_at|date:"M d, Y" }}
-        </p>
+            <tr>
 
-        <p>
-            Status:
-            <strong>{{ order.get_order_status_display }}</strong>
-        </p>
+                <td>
+                    #{{ order.id }}
+                </td>
 
-        <a
-            href="{% url 'seller_order_detail' order.pk %}"
-            class="btn"
-        >
-            View Order
-        </a>
+                <td>
+                    {{ order.name }}
+                </td>
 
-    </div>
+                <td>
+                    {{ order.created_at|date:"M d, Y" }}
+                </td>
 
-    {% endfor %}
+                <td>
+                    {{ order.get_order_status_display }}
+                </td>
+
+                <td>
+                    <a
+                        href="{% url 'seller_order_detail' order.pk %}"
+                        class="btn"
+                    >
+                        View Order
+                    </a>
+                </td>
+
+            </tr>
+
+            {% endfor %}
+
+        </tbody>
+
+    </table>
 
 </div>
 

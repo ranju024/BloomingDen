@@ -6,17 +6,15 @@
 <div class="page-section">
     <h1>My Listings</h1>
 
-```
+***
 <a href="{% url 'listing_create' %}" class="btn">
     Sell a plant
 </a>
-```
+***
 
 </div>
 
 <div class="product-grid">
-
-```
 {% for listing in listings %}
 
 <div class="product-card">
@@ -73,8 +71,6 @@
 </div>
 
 {% endfor %}
-```
-
 </div>
 
 {% endblock %}

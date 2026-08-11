@@ -12,53 +12,113 @@
 
 </div>
 
+
 <div class="order-card">
 
-    <h3>Customer</h3>
+    <h3>Customer Information</h3>
 
-    <p><strong>Name:</strong> {{ order.name }}</p>
-    <p><strong>Phone:</strong> {{ order.phone }}</p>
-    <p><strong>Address:</strong> {{ order.address }}</p>
+    <table class="order-info-table">
+
+        <tr>
+            <th>Name</th>
+            <td>{{ order.name }}</td>
+        </tr>
+
+        <tr>
+            <th>Phone</th>
+            <td>{{ order.phone }}</td>
+        </tr>
+
+        <tr>
+            <th>Address</th>
+            <td>{{ order.address }}</td>
+        </tr>
+
+    </table>
 
 </div>
+
 
 <div class="order-card">
 
     <h3>Your Products in This Order</h3>
 
-    {% for item in order.items.all %}
+    <div class="order-table-wrapper">
 
-        {% if item.seller == vendor %}
+        <table class="order-table">
 
-        <div class="order-item">
+            <thead>
+                <tr>
+                    <th>Product</th>
+                    <th>Quantity</th>
+                    <th>Unit Price</th>
+                    <th>Subtotal</th>
+                </tr>
+            </thead>
 
-            <p>
-                <strong>{{ item.product_name }}</strong>
-            </p>
+            <tbody>
 
-            <p>
-                Quantity: {{ item.quantity }}
-            </p>
+                {% for item in order.items.all %}
 
-            <p>
-                Unit price: Rs. {{ item.unit_price }}
-            </p>
+                    {% if item.seller == vendor %}
 
-            <p>
-                Subtotal: Rs. {{ item.subtotal }}
-            </p>
+                    <tr>
 
-        </div>
+                        <td>
+                            {{ item.product_name }}
+                        </td>
 
-        {% endif %}
+                        <td>
+                            {{ item.quantity }}
+                        </td>
 
-    {% endfor %}
+                        <td>
+                            Rs. {{ item.unit_price }}
+                        </td>
+
+                        <td>
+                            Rs. {{ item.subtotal }}
+                        </td>
+
+                    </tr>
+
+                    {% endif %}
+
+                {% endfor %}
+
+            </tbody>
+
+        </table>
+
+    </div>
 
 </div>
 
+
 <div class="order-card">
 
-    <h3>Order Status</h3>
+    <h3>Payment</h3>
+
+    <table class="order-info-table">
+
+        <tr>
+            <th>Payment Method</th>
+            <td>{{ order.get_payment_method_display }}</td>
+        </tr>
+
+        <tr>
+            <th>Payment Status</th>
+            <td>{{ order.get_payment_status_display }}</td>
+        </tr>
+
+    </table>
+
+</div>
+
+
+<div class="order-card">
+
+    <h3>Update Order Status</h3>
 
     <form method="post">
 
@@ -68,12 +128,12 @@
 
             {% for value, label in status_choices %}
 
-                <option
-                    value="{{ value }}"
-                    {% if order.order_status == value %}selected{% endif %}
-                >
-                    {{ label }}
-                </option>
+            <option
+                value="{{ value }}"
+                {% if order.order_status == value %}selected{% endif %}
+            >
+                {{ label }}
+            </option>
 
             {% endfor %}
 
@@ -90,6 +150,7 @@
     </form>
 
 </div>
+
 
 <a href="{% url 'seller_orders' %}" class="back-link">
     ← Back to Orders
