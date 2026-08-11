@@ -6,12 +6,13 @@ from django.contrib import messages
 from django.contrib.auth import login as auth_login
 from django.contrib.auth.decorators import login_required
 from django.db.models import Q
+from django.db import transaction
 from django.urls import reverse
 from decimal import Decimal, InvalidOperation
 
 from ..decorators import seller_required
 from ..forms import SignUpForm, PlantListingForm
-from ..models import Product, Order, Category, Profile, PlantListing, Conversation, Message, Vendor
+from ..models import (OrderItem, Product, Order, Category, Profile, PlantListing, Conversation, Message, Vendor)
 from ..cart import Cart
 
 import json
@@ -135,13 +136,14 @@ def remove_from_cart(request, key):
 
 @login_required
 def checkout(request):
-    ''' Handles checkout form submission and saves the order'''
+    ''' Handles checkout form submission and creates an order from the current cart'''
     if request.user.profile.role != "buyer":
         messages.error(request, "Only buyers can checkout.")
-        return redirect("seller_dashboard")
+        return redirect("home")
     
     items, total_price = get_cart_data(request)
     if not items:
+        messages.error(request, "Your cart is empty.")
         return redirect('home') # if nth to check out
     
     if request.method == 'POST':
@@ -150,27 +152,116 @@ def checkout(request):
         address = request.POST.get('address', '').strip()
         payment_method = request.POST.get('payment_method', 'cod')
 
-        if name and phone and address:  # minimal server-side validation
+        if not name or not phone or not address:  
+            messages.error(request, "Please fill in all delivery details.")
+            return render(
+                request, 
+                "catalog/checkout.html", 
+                {"items": items, "total_price": total_price},
+            )
+        
+        with transaction.atomic():
+            # Lock the products while checking stock
+            product_ids = [item["id"] for item in items]
+            products = {
+                product.id: product
+                for product in Product.objects.select_for_update().filter(
+                    id__in=product_ids,
+                    status="active",
+                )
+            }
+
+            # validate every cart item
+            for item in items:
+                product = products.get(item["id"])
+                if not product:
+                    messages.error(
+                        request,
+                        f"{item['name']} is no longer available.",
+                    )
+                if item["quantity"] > product.stock:
+                    messages.error(
+                        request, 
+                        f"Only {product.stock} unit of "
+                        f"{product.name} available.",
+                    )
+                    return redirect("cart_detail")
+                
+            calculated_total = Decimal("0.00")
+            for item in items:
+                product = products[item["id"]]
+                calculated_total += (
+                    product.price * item["quantity"]
+                )
+
+
             order = Order.objects.create(
+                user=request.user,
                 name=name,
                 phone=phone,
                 address=address,
-                total_price=total_price, 
+                total_price=calculated_total, 
                 payment_method=payment_method
             )
-            request.session['cart'] = {}  #empty the cart
-            request.session.modified = True
 
-            if payment_method == 'esewa':
-                return redirect('esewa_initiate', order_id=order.id)
-            elif payment_method == 'khalti':
-                return redirect('khalti_initiate', order_id=order.id)           
-            return redirect('order_success', order_id=order.id)
+            # create a permanent record or every purchase product.
+            for item in items:
+                product = products[item["id"]]
+                OrderItem.objects.create(
+                    order=order,
+                    product=product,
+                    seller=product.seller,
+                    product_name=product.name,
+                    quantity=item["quantity"],
+                    unit_price=product.price,
+                    subtotal=product.price * item["quantity"],
+                )
+
+            # COD is considered 'ordered' immediately on checkout
+            # Online payments will redice stock after successful payment
+            if payment_method == "cod":
+                for item in items:
+                    product = products[item["id"]]
+                    product.stock -= item["quantity"]
+                    if product.stock == 0:
+                        product.status = "out_of_stock"
+                    product.save(
+                        update_fields=["stock", "status", "updated_at"]
+                    )
+                order.order_status = "confirmed"
+                order.save(update_fields=["order_status", "updated_at"])
+
+                # cOD order is complete enough to clear the cart now
+                request.session["cart"] = {}
+                request.session.modified = True
+
+                return redirect(
+                    "order_success",
+                    order_id=order.id,
+                )
+            
+        # for esewa/khalti, we keep the cart until payment succeeds.
+        if payment_method == "esewa":
+            return redirect(
+                "esewa_initiate",
+                order_id=order.id,
+            )
+        elif payment_method == "khalti":
+            return redirect(
+                "khalti_initiate",
+                order_id=order.id,
+            )
         
+        #otherwise
+        messages.error(request, "Invalid payment method.")
+        order.delete() # order not successful so remove it
+        return redirect("checkout")
+                  
     return render(request, "catalog/checkout.html", {
         "items": items,
         "total_price": total_price
     })
+
 
 def esewa_initiate(request, order_id):
     order = get_object_or_404(Order, id=order_id)
@@ -185,6 +276,48 @@ def esewa_initiate(request, order_id):
         "payment_data": payment_data,
         "esewa_url": ESEWA_FORM_URL,
     })
+
+
+def finalize_paid_order(order):
+    ''' 
+    Finalize an order after successful online payment.
+    This reduces stock exactly once and marks the order as confirmed.
+    '''
+    with transaction.atomic():
+        order = Order.objects.select_for_update().get(pk=order.pk)
+
+        # prevent duplicate stock reduction if the payment callback is received more than once.
+        if order.payment_status == 'paid':
+            return True
+        
+        for item in order.items.select_related("product").all():
+            product = item.product
+            if not product:
+                return False
+            product = Product.objects.select_for_update().get(pk=product.pk)
+            if product.stock < item.quantity:
+                return False
+            product.stock -= item.quantity
+            if product.stock == 0:
+                product.status = "out_of_stock"
+            product.save(
+                update_fields=[
+                    "stock",
+                    "status",
+                    "updated_at",
+                ]
+            )
+        order.payment_status = "paid"
+        order.order_status = "confirmed"
+        order.save(
+            update_fields=[
+                "payment_status",
+                "order_status",
+                "updated_at",
+            ]
+        )
+    return True
+
 
 
 def esewa_success(request):
@@ -217,9 +350,21 @@ def esewa_success(request):
         messages.error(request, "Payment amount mismatch. Please contact support.")
         return redirect('payment_failure')
 
-    order.payment_status = 'paid'
-    order.save()
+    if not finalize_paid_order(order):
+        messages.error(
+            request,
+            "Payment was successful, but the product stock is no longer available. " \
+            "\nPlease contact support."
+        )
+        return redirect("payment_failure")
+    
+    # payment successful, so now cart is cleared
+    request.session["cart"] = {}
+    request.session.modified = True
+
     return redirect('order_success', order_id=order.id)
+
+
 
 def khalti_initiate(request, order_id):
     order = get_object_or_404(Order, id=order_id)
@@ -258,9 +403,21 @@ def khalti_verify(request):
         messages.error(request, "Payment amount mismatch. Please contact support.")
         return redirect('payment_failure')
 
-    order.payment_status = 'paid'
-    order.save()
-    return redirect('order_success', order_id=order.id)
+    if not finalize_paid_order(order):
+        messages.error(
+            request,
+            "Payment was successful, but the product stock is no longer available. \n" \
+            "Please contact support.",
+        )
+        return redirect("payment_failure")
+
+    request.session["cart"] = {}
+    request.session.modified = True
+
+    return redirect(
+        "order_success",
+        order_id=order.id,
+    )
 
 
 def payment_failure(request):
