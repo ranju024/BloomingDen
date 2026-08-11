@@ -1,6 +1,5 @@
 from django.db import models
 from django.utils.text import slugify
-from django.urls import reverse
 from django.contrib.auth.models import User
 
 # Create your models here.
@@ -41,11 +40,6 @@ class Vendor(models.Model):
     phone = models.CharField(max_length=20, blank=True)
     address = models.TextField(blank=True)
     verified = models.BooleanField(default=False)
-    rating = models.DecimalField(
-        max_digits=3,
-        decimal_places=2,
-        default=0,
-    )
     created_at = models.DateTimeField(auto_now_add=True)
 
     def save(self, *args, **kwargs):
@@ -106,18 +100,10 @@ class Product(models.Model):
     description = models.TextField()
     price = models.DecimalField(max_digits=10, decimal_places=2, )
     stock = models.PositiveIntegerField(default=0)
-    # image = models.ImageField(upload_to="products/", blank=True, null=True, )
     status = models.CharField(max_length=20, choices=STATUS_CHOICES, default="draft",)
     condition = models.CharField(max_length=10, choices=CONDITION_CHOICES, default="new",)
     is_featured = models.BooleanField(default=False)   
-    average_rating = models.DecimalField(
-        max_digits=3,
-        decimal_places=2,
-        default=0,
-    )
 
-    review_count = models.PositiveIntegerField(default=0)
-    views = models.PositiveIntegerField(default=0) 
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
 
@@ -197,52 +183,6 @@ class PlantDetails(models.Model):
     def __str__(self):
         return self.product.name
 
-class Wishlist(models.Model):
-    user = models.ForeignKey(
-        User,
-        on_delete=models.CASCADE,
-        related_name="wishlist",
-    )
-
-    product = models.ForeignKey(
-        Product,
-        on_delete=models.CASCADE,
-        related_name="wishlisted_by",
-    )
-
-    created_at = models.DateTimeField(auto_now_add=True)
-
-    class Meta:
-        unique_together = ("user", "product")
-
-    def __str__(self):
-        return f"{self.user.username} - {self.product.name}"
-
-
-class Review(models.Model):
-    product = models.ForeignKey(
-        Product,
-        on_delete=models.CASCADE,
-        related_name="reviews",
-    )
-
-    user = models.ForeignKey(
-        User,
-        on_delete=models.CASCADE,
-    )
-
-    rating = models.PositiveSmallIntegerField()
-
-    comment = models.TextField()
-
-    created_at = models.DateTimeField(auto_now_add=True)
-
-    class Meta:
-        unique_together = ("product", "user")
-
-    def __str__(self):
-        return f"{self.product.name} - {self.rating}"
-
 
     
 class Order(models.Model):
@@ -270,7 +210,7 @@ class Order(models.Model):
     address = models.TextField()
     total_price = models.DecimalField(max_digits=10, decimal_places=2)
     payment_method = models.CharField(max_length=10, choices=PAYMENT_CHOICES, default='cod')
-    payment_status = models.CharField(max_length=10, default='pending')
+    payment_status = models.CharField(max_length=10, choices=PAYMENT_STATUS_CHOICES, default='pending')
     order_status = models.CharField(max_length=20, choices=ORDER_STATUS_CHOICES, default="pending")  # order status
     transaction_uuid = models.CharField(max_length=100, blank=True, null=True)
     created_at = models.DateTimeField(auto_now_add=True)
