@@ -9,7 +9,9 @@
         <div class="product-gallery">
             <div class="detail-image">
                 {% if listing.image %}
-                    <img src="{{ listing.image.url }}" alt="{{ listing.name }}">
+                    <a href="{{ listing.image.url }}" class="image-lightbox-trigger">
+                        <img src="{{ listing.image.url }}" alt="{{ listing.name }}">
+                    </a>
                 {% else %}
                     <img src="{% static 'images/no-image.jpg' %}" alt="No image available">
                 {% endif %}

@@ -8,7 +8,9 @@
         <div class="product-gallery">
             {% for image in product.images.all %}
                 <div class="detail-image">
-                    <img src="{{ image.image.url }}" alt="{{ image.alt_text|default:product.name }}">
+                    <a href="{{ image.image.url }}" class="image-lightbox-trigger">
+                        <img src="{{ image.image.url }}" alt="{{ image.alt_text|default:product.name }}">
+                    </a>
                 </div>
             {% empty %}
                 <div class="product-no-image">No image available.</div>

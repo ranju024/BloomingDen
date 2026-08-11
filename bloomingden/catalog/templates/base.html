@@ -60,11 +60,59 @@
       {% block content %} {% endblock %}
     </div>
     <footer>
-      <p>&copy; 2026 BloomingDen. Fresh catalog, delivered with care.</p>
+      <p>&copy; 2026 BloomingDen. Quality products, delivered with care.</p>
     </footer>
+
+    <div id="imageLightbox" class="image-lightbox">
+        <button type="button" class="image-lightbox-close" aria-label="Close">&times;</button>
+        <img id="lightboxImage" src="" alt="">
+    </div>
+
+    <script>
+    document.addEventListener("DOMContentLoaded", function () {
+        const lightbox = document.getElementById("imageLightbox");
+        const lightboxImage = document.getElementById("lightboxImage");
+        const closeButton = document.querySelector(".image-lightbox-close");
+
+        document.querySelectorAll(".image-lightbox-trigger").forEach(function (element) {
+            element.addEventListener("click", function (event) {
+                event.preventDefault();
+
+                const image = this.tagName === "IMG"
+                    ? this
+                    : this.querySelector("img");
+
+                if (!image) return;
+
+                lightboxImage.src = image.src;
+                lightboxImage.alt = image.alt || "";
+
+                lightbox.classList.add("active");
+                document.body.style.overflow = "hidden";
+            });
+        });
+
+        function closeLightbox() {
+            lightbox.classList.remove("active");
+            lightboxImage.src = "";
+            document.body.style.overflow = "";
+        }
+
+        closeButton.addEventListener("click", closeLightbox);
+
+        lightbox.addEventListener("click", function (event) {
+            if (event.target === lightbox) {
+                closeLightbox();
+            }
+        });
+
+        document.addEventListener("keydown", function (event) {
+            if (event.key === "Escape" && lightbox.classList.contains("active")) {
+                closeLightbox();
+            }
+        });
+    });
+    </script>    
   </body>
 </html>
 
-{% comment %} 
-
-{% endcomment %} 

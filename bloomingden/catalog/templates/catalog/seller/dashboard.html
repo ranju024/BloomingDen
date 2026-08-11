@@ -58,7 +58,7 @@
 
             {% with image=product.primary_image %}
                 {% if image %}
-                    <img src="{{ image.image.url }}" width="70">
+                    <img src="{{ image.image.url }}" alt="{{ product.name }}" class="dashboard-product-image image-lightbox-trigger">
                 {% else %}
                     No Image
                 {% endif %}
